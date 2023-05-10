@@ -9,6 +9,8 @@ import FriendScreen from "./screens/FriendScreen";
 import RankingScreen from "./screens/RankingScreen";
 import WorkoutScreen from "./screens/WorkoutScreen";
 import SignUpScreen from "./screens/SignUpScreen";
+import WorkoutDetailScreen from "./screens/WorkoutDetailScreen";
+import WorkoutDetailScreen2 from "./screens/WorkoutDetailScreen2";
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -32,6 +34,8 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
+        <Stack.Screen name="WorkoutDetail2" component={WorkoutDetailScreen2} />
       </Stack.Navigator>
     </NavigationContainer>
   );
