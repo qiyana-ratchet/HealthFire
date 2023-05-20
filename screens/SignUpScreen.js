@@ -73,6 +73,9 @@ const SignUpScreen = ({ navigation }) => {
         name,
         nickname,
         uid: user.uid,
+        friend: [],
+        marked: [],
+        requests: [],
       };
       await setDoc(doc(db, "users", user.email), userData); // Here's the change
       setIsRegistrationSuccess(true);
