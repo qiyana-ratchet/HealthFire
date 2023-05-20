@@ -21,6 +21,13 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { app, auth } from "../FirebaseConfig";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+} from "firebase/firestore";
 
 const SignUpScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -28,9 +35,10 @@ const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isRegistraionSuccess, setIsRegistraionSuccess] = useState(false);
+  const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
+  const db = getFirestore();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name) {
       alert("이름을 입력해주세요");
       return;
@@ -52,18 +60,29 @@ const SignUpScreen = ({ navigation }) => {
       alert("비밀번호가 일치하지 않습니다");
       return;
     }
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((res) => {
-        updateProfile(auth.currentUser, { displayName: name, nickname });
-        setIsRegistraionSuccess(true);
-        console.log("Registration Successful. Please Login to proceed");
-      })
-      .catch((err) => {
-        console.log("err.message:", err.message);
-      });
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      await updateProfile(user, { displayName: name, nickname });
+      const userData = {
+        email: user.email,
+        name,
+        nickname,
+        uid: user.uid,
+      };
+      await setDoc(doc(db, "users", user.email), userData); // Here's the change
+      setIsRegistrationSuccess(true);
+      console.log("Registration Successful. Please Login to proceed");
+    } catch (error) {
+      console.log("Error:", error.message);
+    }
   };
 
-  if (isRegistraionSuccess) {
+  if (isRegistrationSuccess) {
     return (
       <View style={styles.container}>
         <View style={{ flex: 1 }} />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,18 +6,57 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  ScrollView,
+  Button,
 } from "react-native";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  arrayUnion,
+} from "firebase/firestore";
+import { app, auth } from "../../FirebaseConfig";
 
 const AddFriendScreen = ({ navigation }) => {
   const [search, setSearch] = useState("");
+  const [foundUser, setFoundUser] = useState(null);
+  const db = getFirestore();
 
-  const handleSearch = (text) => {
+  const handleSearch = async (text) => {
     setSearch(text);
-    console.log("Search text: ", text);
+    const usersCol = collection(db, "users");
+    const userSnapshot = await getDocs(usersCol);
+    const userList = userSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const found = userList.find((user) => user.nickname === text);
+    setFoundUser(found);
   };
 
+  const addFriend = async () => {
+    if (foundUser) {
+      const currentUser = auth.currentUser.uid;
+      const currentUserDoc = doc(db, "users", currentUser);
+      await updateDoc(currentUserDoc, {
+        friends: arrayUnion(foundUser.id),
+      });
+      alert("Friend added!");
+      setFoundUser(null);
+      setSearch("");
+    }
+  };
+
+  useEffect(() => {
+    if (auth.currentUser === null) {
+      navigation.navigate("Login"); // Assuming 'Login' is the name of your Login screen
+    }
+  }, []);
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -38,8 +77,16 @@ const AddFriendScreen = ({ navigation }) => {
             onChangeText={handleSearch}
           />
         </View>
+        {foundUser && (
+          <View style={styles.resultContainer}>
+            <Text style={styles.resultText}>
+              User found: {foundUser.nickname}
+            </Text>
+            <Button title="Add friend" onPress={addFriend} />
+          </View>
+        )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -80,6 +127,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderColor: "#aaaaaa",
     backgroundColor: "#fff",
+  },
+  resultContainer: {
+    marginVertical: 30,
+    marginHorizontal: 35,
+    borderWidth: 1,
+    borderRadius: 15,
+    borderColor: "#aaaaaa",
+    height: 130,
+  },
+  resultText: {
+    padding: 20,
   },
 });
 

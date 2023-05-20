@@ -1,5 +1,12 @@
 import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from "react-native";
 
 export default function FriendScreen({ navigation }) {
   const friendCount = 10;
@@ -9,9 +16,12 @@ export default function FriendScreen({ navigation }) {
   const handleAddFriend = () => {
     navigation.navigate("AddFriend");
   };
+  const handleRequestFriend = () => {
+    navigation.navigate("RequestFriend");
+  };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>운동 친구</Text>
       <View style={styles.statsContainer}>
         <View style={styles.column}>
@@ -45,7 +55,7 @@ export default function FriendScreen({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.requestButton}
-          onPress={handleAddFriend}
+          onPress={handleRequestFriend}
         >
           <Text style={styles.addButtonText}>친구 요청</Text>
         </TouchableOpacity>
@@ -54,7 +64,7 @@ export default function FriendScreen({ navigation }) {
         <View style={styles.friendContainer}></View>
         <View style={styles.friendContainer}></View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -153,6 +163,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     flexDirection: "row",
-    marginHorizontal: 30,
+    marginHorizontal: 15,
   },
 });
