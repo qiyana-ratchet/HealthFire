@@ -5,10 +5,11 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import LoginScreen from "./screens/LoginScreen";
 import HomeScreen from "./screens/HomeScreen";
-import FriendScreen from "./screens/FriendScreen";
+import FriendScreen from "./screens/FirendScreen/FriendScreen";
 import RankingScreen from "./screens/RankingScreen";
 import WorkoutScreen from "./screens/WorkoutScreen";
 import SignUpScreen from "./screens/SignUpScreen";
+import AddFriendScreen from "./screens/FirendScreen/AddFriendScreen";
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -36,6 +37,11 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen
+          name="AddFriend"
+          component={AddFriendScreen}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

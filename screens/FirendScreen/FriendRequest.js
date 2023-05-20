@@ -1,11 +1,11 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function FriendScreen() {
-  // 친구 화면
+export default function RankingScreen() {
+  // 랭킹 화면
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>This is the Friend Screen</Text>
+      <Text style={styles.title}>This is the Ranking Screen</Text>
     </View>
   );
 }
