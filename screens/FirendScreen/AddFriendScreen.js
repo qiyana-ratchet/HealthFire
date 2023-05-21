@@ -38,12 +38,12 @@ const AddFriendScreen = ({ navigation }) => {
 
   const addFriend = async () => {
     if (foundUser) {
-      const currentUser = auth.currentUser.uid;
-      const currentUserDoc = doc(db, "users", currentUser);
-      await updateDoc(currentUserDoc, {
-        friends: arrayUnion(foundUser.id),
+      const currentUser = auth.currentUser.email;
+      const foundUserDoc = doc(db, "users", foundUser.id);
+      await updateDoc(foundUserDoc, {
+        requests: arrayUnion(currentUser),
       });
-      alert("Friend added!");
+      alert("Friend request sent!");
       setFoundUser(null);
       setSearch("");
     }
@@ -79,10 +79,15 @@ const AddFriendScreen = ({ navigation }) => {
         </View>
         {foundUser && (
           <View style={styles.resultContainer}>
-            <Text style={styles.resultText}>
-              User found: {foundUser.nickname}
-            </Text>
-            <Button title="Add friend" onPress={addFriend} />
+            <Text style={styles.resultText}>{foundUser.nickname}님</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.addFriendButton}
+                onPress={addFriend}
+              >
+                <Text style={styles.buttonText}>친구 추가</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </View>
@@ -103,6 +108,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     marginBottom: 20,
   },
+
   bodyStyle: {
     flex: 1,
     marginTop: 30,
@@ -114,7 +120,6 @@ const styles = StyleSheet.create({
   closeButton: {
     width: 20,
     height: 20,
-    color: "#fff",
   },
   searchContainer: {
     flex: 1,
@@ -128,16 +133,39 @@ const styles = StyleSheet.create({
     borderColor: "#aaaaaa",
     backgroundColor: "#fff",
   },
+
   resultContainer: {
+    flex: 1,
+    height: 350,
     marginVertical: 30,
     marginHorizontal: 35,
     borderWidth: 1,
     borderRadius: 15,
     borderColor: "#aaaaaa",
-    height: 130,
+    justifyContent: "space-between", // 컴포넌트들을 양끝으로 배치
   },
+  buttonContainer: {
+    marginBottom: 20, // 버튼의 아래 여백
+  },
+  addFriendButton: {
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fc493e",
+    borderRadius: 10,
+    height: 55,
+    width: "60%",
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+  },
+
   resultText: {
-    padding: 20,
+    padding: 40,
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: 700,
   },
 });
 

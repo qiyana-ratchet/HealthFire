@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,14 +6,65 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Button,
 } from "react-native";
+import { useState, useEffect } from "react";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
+import { app, auth } from "../../FirebaseConfig";
 
 const AddFriendScreen = ({ navigation }) => {
-  const [search, setSearch] = useState("");
+  const db = getFirestore();
+  const [requests, setRequests] = useState([]);
 
-  const handleSearch = (text) => {
-    setSearch(text);
-    console.log("Search text: ", text);
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    const currentUser = auth.currentUser.email;
+    const userRef = doc(db, "users", currentUser);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+
+    if (userData.requests) {
+      setRequests(userData.requests);
+    }
+  };
+
+  const handleAccept = async (requestId) => {
+    const currentUser = auth.currentUser.email;
+    const userRef = doc(db, "users", currentUser);
+
+    // Move the request to friends
+    await updateDoc(userRef, {
+      friends: arrayUnion(requestId),
+      requests: arrayRemove(requestId),
+    });
+
+    // Remove the request from local state
+    setRequests(requests.filter((req) => req !== requestId));
+  };
+
+  const handleReject = async (requestId) => {
+    const currentUser = auth.currentUser.uid;
+    const userRef = doc(db, "users", currentUser);
+
+    // Remove the request
+    await updateDoc(userRef, {
+      requests: arrayRemove(requestId),
+    });
+
+    // Remove the request from local state
+    setRequests(requests.filter((req) => req !== requestId));
   };
 
   return (
@@ -30,7 +80,18 @@ const AddFriendScreen = ({ navigation }) => {
           />
         </TouchableOpacity>
       </View>
-      <View style={styles.bodyStyle}></View>
+      <View style={styles.bodyStyle}>
+        <Text style={styles.title}>Friend Requests</Text>
+        {requests.map((request) => (
+          <View key={request} style={styles.requestContainer}>
+            <Text style={styles.requestText}>{request}</Text>
+            <View>
+              <Button title="Accept" onPress={() => handleAccept(request)} />
+              <Button title="Reject" onPress={() => handleReject(request)} />
+            </View>
+          </View>
+        ))}
+      </View>
     </ScrollView>
   );
 };
@@ -59,19 +120,6 @@ const styles = StyleSheet.create({
   closeButton: {
     width: 20,
     height: 20,
-    color: "#fff",
-  },
-  searchContainer: {
-    flex: 1,
-  },
-  searchBox: {
-    marginHorizontal: 30,
-    height: 60,
-    padding: 20,
-    borderWidth: 1,
-    borderRadius: 8,
-    borderColor: "#aaaaaa",
-    backgroundColor: "#fff",
   },
 });
 
