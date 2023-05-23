@@ -10,16 +10,16 @@ const filters = [
 ];
 
 const exercises = [
-  {id: 1, name: '벤치프레스'},
-  {id: 2, name: '스쿼트'},
-  {id: 3, name: '레그프레스'},
-  {id: 4, name: '데드리프트'},
-  {id: 5, name: '밀리터리프레스'},
-  {id: 6, name: '숄더프레스'},
-  {id: 7, name: '바벨컬'},
-  {id: 8, name: '딥스'},
-  {id: 9, name: '푸쉬업'},
-  {id: 10, name: '크런치'},
+  {id: 1, name: '스쿼트'},
+  {id: 2, name: '데드리프트'},
+  {id: 3, name: '런지'},
+  {id: 4, name: '레그익스텐션'},
+  {id: 5, name: '벤치프레스'},
+  {id: 6, name: '덤벨플라이'},
+  {id: 7, name: '딥스'},
+  {id: 8, name: '조깅'},
+  {id: 9, name: '사이클'},
+  {id: 10, name: '플랭크'},
 ];
 
 export default function WorkoutDetailScreen({navigation}) {
