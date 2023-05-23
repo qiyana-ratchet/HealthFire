@@ -1,43 +1,76 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, ScrollView, Pressable} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import {StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput} from 'react-native';
+import {firestore, auth} from '../FirebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const exercises = [
-  { id: 1, name: '벤치프레스' },
-  { id: 2, name: '스쿼트' },
-  { id: 3, name: '레그프레스' },
-  { id: 4, name: '데드리프트' },
-  { id: 5, name: '밀리터리프레스' },
-  { id: 6, name: '숄더프레스' },
-  { id: 7, name: '바벨컬' },
-  { id: 8, name: '딥스' },
-  { id: 9, name: '푸쉬업' },
-  { id: 10, name: '크런치' },
+  {id: 1, name: '스쿼트'},
+  {id: 2, name: '데드리프트'},
+  {id: 3, name: '런지'},
+  {id: 4, name: '레그익스텐션'},
+  {id: 5, name: '벤치프레스'},
+  {id: 6, name: '덤벨플라이'},
+  {id: 7, name: '딥스'},
+  {id: 8, name: '조깅'},
+  {id: 9, name: '사이클'},
+  {id: 10, name: '플랭크'},
 ];
 
 export default function WorkoutDetailScreen2({route, navigation}) {
   const {selectedExercises} = route.params;
 
-  const [sets, setSets] = useState([]);
-  const [interval, setInterval] = useState(60);
+  const [sets, setSets] = useState({});
 
-  const handleComplete = () => {
-    // 데이터를 저장하거나 다른 작업을 수행합니다.
-    // ...
+  const handleComplete = async () => {
+    // Firestore에 운동 데이터를 저장
+    const user = auth.currentUser;
+    const email = user ? user.email : ''; // Firestore에 저장할 사용자 이메일
+    const workoutData = sets;
+    try {
+      await firestore.collection('users').doc(email).collection('exercise').doc('20230524').set({"4": [{"count": "12", "interval": "5"}]}
+      )
+      // await firestore.collection('users').doc(email).collection('exercise').doc('20230524').set(workoutData);
+      console.log('Workout data saved successfully.');
+    } catch (error) {
+      console.log("sets: ",sets)
+      console.error('Error saving workout data:', error);
+    }
 
-    // WorkoutDetailScreen2 화면을 종료하고 이전 화면으로 돌아갑니다.
+    // WorkoutDetailScreen2 화면을 종료
     navigation.navigate('Main');
   };
 
   const handleAddSet = (exerciseId) => {
-    const index = sets.findIndex(set => set.exerciseId === exerciseId);
-    if (index !== -1) {
-      const updatedSets = [...sets];
-      updatedSets[index].count += 1;
-      setSets(updatedSets);
-    } else {
-      setSets([...sets, {exerciseId, count: 1}]);
-    }
+    setSets(prevSets => ({
+      ...prevSets,
+      [exerciseId]: prevSets[exerciseId]
+        ? [...prevSets[exerciseId], {count: '', interval: ''}]
+        : [{count: '', interval: ''}],
+    }));
+  };
+
+  const handleSetCountChange = (exerciseId, setIndex, count) => {
+    setSets(prevSets => ({
+      ...prevSets,
+      [exerciseId]: prevSets[exerciseId].map((set, index) => {
+        if (index === setIndex) {
+          return {...set, count};
+        }
+        return set;
+      }),
+    }));
+  };
+
+  const handleSetIntervalChange = (exerciseId, setIndex, interval) => {
+    setSets(prevSets => ({
+      ...prevSets,
+      [exerciseId]: prevSets[exerciseId].map((set, index) => {
+        if (index === setIndex) {
+          return {...set, interval};
+        }
+        return set;
+      }),
+    }));
   };
 
   return (
@@ -45,40 +78,42 @@ export default function WorkoutDetailScreen2({route, navigation}) {
       <ScrollView>
         {selectedExercises.map(exerciseId => {
           const exercise = exercises.find(exercise => exercise.id === exerciseId);
-          const exerciseSets = sets.filter(set => set.exerciseId === exerciseId);
+          const exerciseSets = sets[exerciseId] || [];
+
           return (
             <View key={exercise.id} style={styles.exerciseContainer}>
               <View style={styles.exerciseHeader}>
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
-                <TouchableOpacity style={styles.addSetButton} onPress={() => handleAddSet(exercise.id)}>
+                <TouchableOpacity
+                  style={styles.addSetButton}
+                  onPress={() => handleAddSet(exerciseId)}
+                >
                   <Text style={styles.addSetButtonText}>+</Text>
                 </TouchableOpacity>
               </View>
-              {exerciseSets.map((set, index) => (
-                <View key={index} style={styles.setContainer}>
-                  <Text style={styles.setNumber}>Set {index + 1}</Text>
-                  <Picker
-                    selectedValue={set.count}
-                    style={styles.setPicker}
-                    onValueChange={(itemValue) => {
-                      const updatedSets = [...sets];
-                      updatedSets[index].count = itemValue;
-                      setSets(updatedSets);
-                    }}
-                  >
-                    {[1, 2, 3, 4, 5].map((count) => (
-                      <Picker.Item key={count} label={`${count} 세트`} value={count}/>
-                    ))}
-                  </Picker>
-                  <Picker
-                    selectedValue={interval}
-                    style={styles.intervalPicker}
-                    onValueChange={setInterval}
-                  >
-                    {[30, 45, 60, 90, 120].map((value) => (
-                      <Picker.Item key={value} label={`${value} 초 인터벌`} value={value}/>
-                    ))}
-                  </Picker>
+              {exerciseSets.map((set, setIndex) => (
+                <View key={setIndex} style={styles.setContainer}>
+                  <Text style={styles.setNumber}>Set {setIndex + 1}</Text>
+                  <View style={styles.setInputContainer}>
+                    <TextInput
+                      style={styles.setTextInput}
+                      value={set.count}
+                      onChangeText={text =>
+                        handleSetCountChange(exerciseId, setIndex, text)
+                      }
+                      keyboardType="numeric"
+                    />
+                    <Text style={styles.setInputLabel}>세트</Text>
+                    <TextInput
+                      style={styles.setTextInput}
+                      value={set.interval}
+                      onChangeText={text =>
+                        handleSetIntervalChange(exerciseId, setIndex, text)
+                      }
+                      keyboardType="numeric"
+                    />
+                    <Text style={styles.setInputLabel}>초</Text>
+                  </View>
                 </View>
               ))}
             </View>
@@ -91,7 +126,7 @@ export default function WorkoutDetailScreen2({route, navigation}) {
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -133,15 +168,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 8,
   },
-  setPicker: {
-    flex: 1,
-    height: 50,
-    marginHorizontal: 8,
+  setInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  intervalPicker: {
-    flex: 1,
-    height: 50,
-    marginHorizontal: 8,
+  setTextInput: {
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    height: 40,
+    marginRight: 8,
+  },
+  setInputLabel: {
+    fontSize: 16,
   },
   completeButton: {
     backgroundColor: '#333',
