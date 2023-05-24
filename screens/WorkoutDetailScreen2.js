@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput} from 'react-native';
 import {firestore, auth} from '../FirebaseConfig';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { collection, doc, setDoc } from "firebase/firestore";
 
 const exercises = [
   {id: 1, name: '스쿼트'},
@@ -26,13 +26,15 @@ export default function WorkoutDetailScreen2({route, navigation}) {
     const user = auth.currentUser;
     const email = user ? user.email : ''; // Firestore에 저장할 사용자 이메일
     const workoutData = sets;
+
     try {
-      await firestore.collection('users').doc(email).collection('exercise').doc('20230524').set({"4": [{"count": "12", "interval": "5"}]}
-      )
-      // await firestore.collection('users').doc(email).collection('exercise').doc('20230524').set(workoutData);
+      const userCollection = collection(firestore, 'users');
+      const userDoc = doc(userCollection, email);
+      const exerciseCollection = collection(userDoc, 'exercise');
+      const exerciseDoc = doc(exerciseCollection, '20230524');
+      await setDoc(exerciseDoc, workoutData);
       console.log('Workout data saved successfully.');
     } catch (error) {
-      console.log("sets: ",sets)
       console.error('Error saving workout data:', error);
     }
 
