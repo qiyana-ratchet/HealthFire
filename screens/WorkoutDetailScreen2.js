@@ -1,44 +1,72 @@
-import React, {useState} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput} from 'react-native';
-import {firestore, auth} from '../FirebaseConfig';
-import { collection, doc, setDoc } from "firebase/firestore";
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { firestore, auth } from '../FirebaseConfig';
+import { collection, doc, setDoc } from 'firebase/firestore';
 
 const exercises = [
-  {id: 1, name: '스쿼트'},
-  {id: 2, name: '데드리프트'},
-  {id: 3, name: '런지'},
-  {id: 4, name: '레그익스텐션'},
-  {id: 5, name: '벤치프레스'},
-  {id: 6, name: '덤벨플라이'},
-  {id: 7, name: '딥스'},
-  {id: 8, name: '조깅'},
-  {id: 9, name: '사이클'},
-  {id: 10, name: '플랭크'},
+  { id: 1, name: '스쿼트', valueType: 'count' },
+  { id: 2, name: '데드리프트', valueType: 'count' },
+  { id: 3, name: '런지', valueType: 'count' },
+  { id: 4, name: '레그익스텐션', valueType: 'count' },
+  { id: 5, name: '벤치프레스', valueType: 'count' },
+  { id: 6, name: '덤벨플라이', valueType: 'count' },
+  { id: 7, name: '딥스', valueType: 'count' },
+  { id: 8, name: '조깅', valueType: 'time' },
+  { id: 9, name: '사이클', valueType: 'time' },
+  { id: 10, name: '플랭크', valueType: 'time' },
 ];
 
-export default function WorkoutDetailScreen2({route, navigation}) {
-  const {selectedExercises} = route.params;
+export default function WorkoutDetailScreen2({ route, navigation }) {
+  const { selectedExercises } = route.params;
 
   const [sets, setSets] = useState({});
 
   const handleComplete = async () => {
-    // Firestore에 운동 데이터를 저장
     const user = auth.currentUser;
-    const email = user ? user.email : ''; // Firestore에 저장할 사용자 이메일
-    const workoutData = sets;
+    const email = user ? user.email : '';
+    const workoutData = {};
+
+    selectedExercises.forEach(exerciseId => {
+      const exercise = exercises.find(exercise => exercise.id === exerciseId);
+      const exerciseSets = sets[exerciseId] || [];
+
+      const setData = exerciseSets.map(set => {
+        const { valueType } = exercise;
+        let setData = {};
+
+        if (valueType === 'count') {
+          setData = { count: set.count, kg: set.kg, done: false };
+        } else if (valueType === 'time') {
+          setData = { time: set.time, done: false };
+        }
+
+        return setData;
+      });
+
+      workoutData[exerciseId] = setData;
+    });
+
+    // 수정된 부분 시작
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    // 수정된 부분 끝
 
     try {
       const userCollection = collection(firestore, 'users');
       const userDoc = doc(userCollection, email);
       const exerciseCollection = collection(userDoc, 'exercise');
-      const exerciseDoc = doc(exerciseCollection, '20230524');
+      // 수정된 부분 시작
+      const exerciseDoc = doc(exerciseCollection, formattedDate);
+      // 수정된 부분 끝
       await setDoc(exerciseDoc, workoutData);
       console.log('Workout data saved successfully.');
     } catch (error) {
       console.error('Error saving workout data:', error);
     }
 
-    // WorkoutDetailScreen2 화면을 종료
     navigation.navigate('Main');
   };
 
@@ -46,29 +74,17 @@ export default function WorkoutDetailScreen2({route, navigation}) {
     setSets(prevSets => ({
       ...prevSets,
       [exerciseId]: prevSets[exerciseId]
-        ? [...prevSets[exerciseId], {count: '', interval: ''}]
-        : [{count: '', interval: ''}],
+        ? [...prevSets[exerciseId], { count: '', kg: '', time: '' }]
+        : [{ count: '', kg: '', time: '' }],
     }));
   };
 
-  const handleSetCountChange = (exerciseId, setIndex, count) => {
+  const handleSetValueChange = (exerciseId, setIndex, valueName, value) => {
     setSets(prevSets => ({
       ...prevSets,
       [exerciseId]: prevSets[exerciseId].map((set, index) => {
         if (index === setIndex) {
-          return {...set, count};
-        }
-        return set;
-      }),
-    }));
-  };
-
-  const handleSetIntervalChange = (exerciseId, setIndex, interval) => {
-    setSets(prevSets => ({
-      ...prevSets,
-      [exerciseId]: prevSets[exerciseId].map((set, index) => {
-        if (index === setIndex) {
-          return {...set, interval};
+          return { ...set, [valueName]: value };
         }
         return set;
       }),
@@ -97,24 +113,41 @@ export default function WorkoutDetailScreen2({route, navigation}) {
                 <View key={setIndex} style={styles.setContainer}>
                   <Text style={styles.setNumber}>Set {setIndex + 1}</Text>
                   <View style={styles.setInputContainer}>
-                    <TextInput
-                      style={styles.setTextInput}
-                      value={set.count}
-                      onChangeText={text =>
-                        handleSetCountChange(exerciseId, setIndex, text)
-                      }
-                      keyboardType="numeric"
-                    />
-                    <Text style={styles.setInputLabel}>세트</Text>
-                    <TextInput
-                      style={styles.setTextInput}
-                      value={set.interval}
-                      onChangeText={text =>
-                        handleSetIntervalChange(exerciseId, setIndex, text)
-                      }
-                      keyboardType="numeric"
-                    />
-                    <Text style={styles.setInputLabel}>초</Text>
+                    {exercise.valueType === 'count' && (
+                      <>
+                        <TextInput
+                          style={styles.setTextInput}
+                          value={set.count}
+                          onChangeText={text =>
+                            handleSetValueChange(exerciseId, setIndex, 'count', text)
+                          }
+                          keyboardType="numeric"
+                        />
+                        <Text style={styles.setInputLabel}>세트</Text>
+                        <TextInput
+                          style={styles.setTextInput}
+                          value={set.kg}
+                          onChangeText={text =>
+                            handleSetValueChange(exerciseId, setIndex, 'kg', text)
+                          }
+                          keyboardType="numeric"
+                        />
+                        <Text style={styles.setInputLabel}>kg</Text>
+                      </>
+                    )}
+                    {exercise.valueType === 'time' && (
+                      <>
+                        <TextInput
+                          style={styles.setTextInput}
+                          value={set.time}
+                          onChangeText={text =>
+                            handleSetValueChange(exerciseId, setIndex, 'time', text)
+                          }
+                          keyboardType="numeric"
+                        />
+                        <Text style={styles.setInputLabel}>분</Text>
+                      </>
+                    )}
                   </View>
                 </View>
               ))}
