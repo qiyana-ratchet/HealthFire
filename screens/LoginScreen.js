@@ -6,6 +6,8 @@ import {
   TextInput,
   Button,
   KeyboardAvoidingView,
+  Image,
+  TouchableOpacity
 } from "react-native";
 import { app, auth } from "../FirebaseConfig";
 import {
@@ -13,6 +15,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
+import { color } from "react-native-elements/dist/helpers";
 
 export default function LoginScreen({ navigation }) {
   // 로그인 화면
@@ -66,21 +69,36 @@ export default function LoginScreen({ navigation }) {
   return (
     // 이메일과 비밀번호를 입력받아 로그인하거나 회원가입할 수 있는 화면
     <View style={styles.container}>
+      <Image 
+      source={require('../assets/logowhite.png')} 
+      style={{ width: 250, height: 100, top: -50}} 
+      />
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="이메일"
         value={email}
         onChangeText={(text) => setEmail(text)}
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="비밀번호(최소 6자리)"
         value={password}
         secureTextEntry={true}
         onChangeText={(text) => setPassword(text)}
       />
-      <Button title="로그인" onPress={handleLogin} />
-      <Button title="회원가입" onPress={handleSignUp} />
+
+      <Button 
+        style = {styles.button}
+        title = "로그인"
+        onPress={handleLogin}
+        
+      />
+      <Button 
+        title = "회원가입"
+        onPress={handleSignUp}
+      />
+
+
     </View>
   );
 }
@@ -90,6 +108,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#252525"
   },
   input: {
     width: "80%",
@@ -98,5 +117,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
+    backgroundColor: "#FFFCF2"
   },
+  button: {
+    width: "80%",
+    height: 40,
+    borderWidth: 1,
+    borderRadius: 30,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: "#FC493E",
+  },
+  // buttonText:{
+  //   color: "#FFFEFE",
+  // }
 });
+

@@ -1,20 +1,33 @@
 import React, { useState } from "react";
 import {
   StyleSheet,
-  Text,
   View,
-  TextInput,
+  Text,
+  Image,
   TouchableOpacity,
+  TextInput,
   ScrollView,
-  Alert,
-  Toast,
 } from "react-native";
-import { app, auth } from "../FirebaseConfig";
+
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+
+import "react-native-gesture-handler";
 import {
   getAuth,
   createUserWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { app, auth } from "../FirebaseConfig";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+} from "firebase/firestore";
 
 const SignUpScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -22,74 +35,149 @@ const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
+  const db = getFirestore();
 
-  const handleNext = () => {
-    if (password === confirmPassword) {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((res) => {
-          updateProfile(auth.currentUser, { displayName: name, nickname });
-          Alert.alert("회원가입 성공");
-          setName("");
-          setNickname("");
-          setEmail("");
-          setPassword("");
-          setConfirmPassword("");
-          navigation.navigate("Login"); // 회원가입 화면으로 이동
-        })
-        .catch((err) => {
-          console.log("err.message:", err.message);
-        });
-    } else {
-      Alert.alert(
-        "비밀번호 오류",
-        "비밀번호와 비밀번호 확인 값이 일치하지 않습니다."
+  const handleSubmit = async () => {
+    if (!name) {
+      alert("이름을 입력해주세요");
+      return;
+    }
+    if (!nickname) {
+      alert("닉네임를 입력해주세요");
+      return;
+    }
+    if (!email) {
+      alert("이메일을 입력해주세요");
+      return;
+    }
+
+    if (!password) {
+      alert("비밀번호를 입력해주세요");
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다");
+      return;
+    }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
+      const user = userCredential.user;
+      await updateProfile(user, { displayName: name, nickname });
+      const userData = {
+        email: user.email,
+        name,
+        nickname,
+        uid: user.uid,
+        friend: [],
+        marked: [],
+        requests: [],
+      };
+      await setDoc(doc(db, "users", user.email), userData); // Here's the change
+      setIsRegistrationSuccess(true);
+      console.log("Registration Successful. Please Login to proceed");
+    } catch (error) {
+      console.log("Error:", error.message);
     }
   };
 
+  if (isRegistrationSuccess) {
+    return (
+      <View style={styles.container}>
+        <View style={{ flex: 1 }} />
+        <View style={{ flex: 2 }}>
+          <View
+            style={{
+              height: hp(13),
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              source={require("../assets/success.png")}
+              style={{
+                height: wp(20),
+                resizeMode: "contain",
+                alignSelf: "center",
+              }}
+            />
+          </View>
+          <View
+            style={{
+              height: hp(7),
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontSize: wp("4%") }}>
+              회원가입이 완료되었습니다.
+            </Text>
+          </View>
+
+          <View style={{ height: hp(20), justifyContent: "center" }}>
+            <View>
+              <TouchableOpacity
+                style={styles.button}
+                activeOpacity={0.5}
+                onPress={() => navigation.navigate("Login")}
+              >
+                <Text style={{ color: "white", fontSize: wp("4%") }}>
+                  로그인 하러가기
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>회원가입</Text>
-      <Text style={styles.label}>이름</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={setName}
-        value={name}
-        placeholder="이름 입력"
+    <ScrollView contentContainerStyle={styles.container}>
+      <Image
+        source={require("../assets/SignUpTitle.png")}
+        style={styles.logo}
       />
-      <Text style={styles.label}>닉네임</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={setNickname}
-        value={nickname}
-        placeholder="닉네임 입력"
-      />
-      <Text style={styles.label}>이메일</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={setEmail}
-        value={email}
-        keyboardType="email-address"
-        placeholder="이메일 입력"
-      />
-      <Text style={styles.label}>비밀번호</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={setPassword}
-        value={password}
-        secureTextEntry
-        placeholder="비밀번호 입력"
-      />
-      <Text style={styles.label}>비밀번호 확인</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={setConfirmPassword}
-        value={confirmPassword}
-        secureTextEntry
-        placeholder="비밀번호 확인 입력"
-      />
-      <TouchableOpacity style={styles.button} onPress={handleNext}>
-        <Text style={styles.buttonText}>다음 단계</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          onChangeText={setName}
+          value={name}
+          placeholder="이름 입력"
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={setNickname}
+          value={nickname}
+          placeholder="닉네임 입력"
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={setEmail}
+          value={email}
+          keyboardType="email-address"
+          placeholder="이메일 입력해주세요"
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={setPassword}
+          value={password}
+          secureTextEntry
+          placeholder="비밀번호를 입력해주세요"
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={setConfirmPassword}
+          value={confirmPassword}
+          secureTextEntry
+          placeholder="비밀번호 확인"
+        />
+      </View>
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>회원가입</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -97,48 +185,46 @@ const SignUpScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#ffffff",
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#252525",
+    padding: 20,
+  },
+  logo: {
+    width: 240,
+    height: 200,
+    marginBottom: 10,
+    resizeMode: "contain",
   },
   title: {
-    fontSize: 32,
-    fontWeight: "700",
-    marginBottom: 24,
-    color: "#222",
-    alignSelf: "center",
+    fontSize: 30,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "#252525",
+  },
+  inputContainer: {
+    width: "100%",
   },
   input: {
-    height: 50,
+    height: 60,
     borderColor: "#c7c7cc",
     borderWidth: 1,
     paddingHorizontal: 12,
     marginBottom: 20,
     borderRadius: 8,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#FFF",
     fontSize: 18,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#333333",
-    marginBottom: 8,
-  },
-  checkbox: {
-    alignSelf: "flex-start",
-    marginBottom: 20,
-    marginLeft: 0,
-    paddingLeft: 0,
-    backgroundColor: "#ffffff",
-    borderWidth: 0,
+    width: "100%",
   },
   button: {
-    backgroundColor: "#1877F2",
-    paddingVertical: 14,
-    paddingHorizontal: 40,
+    backgroundColor: "#fc493e",
+    paddingVertical: 20,
+    paddingHorizontal: 100,
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 30,
     marginTop: 20,
+    width: "100%",
     alignSelf: "center",
   },
   buttonText: {

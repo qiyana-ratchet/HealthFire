@@ -5,12 +5,14 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import LoginScreen from "./screens/LoginScreen";
 import HomeScreen from "./screens/HomeScreen";
-import FriendScreen from "./screens/FriendScreen";
+import FriendScreen from "./screens/FirendScreen/FriendScreen";
 import RankingScreen from "./screens/RankingScreen";
 import WorkoutScreen from "./screens/WorkoutScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import WorkoutDetailScreen from "./screens/WorkoutDetailScreen";
 import WorkoutDetailScreen2 from "./screens/WorkoutDetailScreen2";
+import AddFriendScreen from "./screens/FirendScreen/AddFriendScreen";
+import RequestFriendScreen from "./screens/FirendScreen/FriendRequest";
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -32,10 +34,24 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen
+          name="Main"
+          component={MainTabs}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
         <Stack.Screen name="WorkoutDetail2" component={WorkoutDetailScreen2} />
+        <Stack.Screen
+          name="AddFriend"
+          component={AddFriendScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="RequestFriend"
+          component={RequestFriendScreen}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
