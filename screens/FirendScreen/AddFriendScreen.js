@@ -13,15 +13,18 @@ import {
   getFirestore,
   collection,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
 import { app, auth } from "../../FirebaseConfig";
+import Dialog from "react-native-dialog";
 
 const AddFriendScreen = ({ navigation }) => {
   const [search, setSearch] = useState("");
   const [foundUser, setFoundUser] = useState(null);
+  const [visible, setVisible] = useState(false);
   const db = getFirestore();
 
   const handleSearch = async (text) => {
@@ -37,16 +40,42 @@ const AddFriendScreen = ({ navigation }) => {
   };
 
   const addFriend = async () => {
+    const currentUserEmail = auth.currentUser.email;
+
+    // Get currentUser's document from Firestore
+    const currentUserSnapshot = await getDoc(
+      doc(db, "users", currentUserEmail)
+    );
+    const currentUserData = currentUserSnapshot.data();
+
     if (foundUser) {
-      const currentUser = auth.currentUser.email;
+      // Check if foundUser's email is in currentUser's friends list
+      if (
+        currentUserData.friend &&
+        currentUserData.friend.includes(foundUser.email)
+      ) {
+        // Display message here
+        alert("이미 친구로 추가되어 있습니다.");
+        return;
+      }
+
       const foundUserDoc = doc(db, "users", foundUser.id);
       await updateDoc(foundUserDoc, {
-        requests: arrayUnion(currentUser),
+        requests: arrayUnion(currentUserEmail),
       });
-      alert("Friend request sent!");
+      setVisible(true);
       setFoundUser(null);
       setSearch("");
     }
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
+  };
+
+  const handleConfirm = () => {
+    // handle the confirm action here
+    setVisible(false);
   };
 
   useEffect(() => {
@@ -58,6 +87,8 @@ const AddFriendScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
+        <Text style={styles.textStyle}>친구 요청</Text>
+
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.closeButtonContainer}
@@ -90,6 +121,12 @@ const AddFriendScreen = ({ navigation }) => {
             </View>
           </View>
         )}
+        <Dialog.Container visible={visible}>
+          <Dialog.Title>친구 요청</Dialog.Title>
+          <Dialog.Description>친구 요청이 전송되었습니다!</Dialog.Description>
+          <Dialog.Button label="취소" onPress={handleCancel} />
+          <Dialog.Button label="확인" onPress={handleConfirm} />
+        </Dialog.Container>
       </View>
     </ScrollView>
   );
@@ -100,24 +137,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flex: 1,
     backgroundColor: "#fc493e",
+    paddingTop: 100,
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingTop: 80,
-    paddingHorizontal: 30,
+    justifyContent: "space-between",
+  },
+  textStyle: {
+    color: "white",
     marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "bold",
+    marginLeft: 30,
   },
 
-  bodyStyle: {
-    flex: 1,
-    marginTop: 30,
-  },
   closeButtonContainer: {
-    alignSelf: "flex-end",
-    paddingBottom: 20,
+    marginRight: 30,
+    marginTop: 4,
+    width: 20,
+    height: 20,
   },
   closeButton: {
+    flex: 1,
     width: 20,
     height: 20,
   },
@@ -125,6 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchBox: {
+    marginVertical: 30,
     marginHorizontal: 30,
     height: 60,
     padding: 20,
@@ -141,7 +183,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 35,
     borderWidth: 1,
     borderRadius: 15,
-    borderColor: "#aaaaaa",
+    backgroundColor: "#fff",
+    borderColor: "#fff",
     justifyContent: "space-between", // 컴포넌트들을 양끝으로 배치
   },
   buttonContainer: {
@@ -154,16 +197,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#fc493e",
     borderRadius: 10,
     height: 55,
-    width: "60%",
+    width: "80%",
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: 700,
   },
 
   resultText: {
+    flex: 1,
     padding: 40,
     textAlign: "center",
+    justifyContent: "center",
+    alignItems: "center",
     fontSize: 24,
     fontWeight: 700,
   },

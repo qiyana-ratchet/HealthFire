@@ -46,7 +46,7 @@ const AddFriendScreen = ({ navigation }) => {
 
     // Move the request to friends
     await updateDoc(userRef, {
-      friends: arrayUnion(requestId),
+      friend: arrayUnion(requestId),
       requests: arrayRemove(requestId),
     });
 
@@ -70,6 +70,8 @@ const AddFriendScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
+        <Text style={styles.textStyle}>친구 요청</Text>
+
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.closeButtonContainer}
@@ -81,16 +83,29 @@ const AddFriendScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.bodyStyle}>
-        <Text style={styles.title}>Friend Requests</Text>
-        {requests.map((request) => (
-          <View key={request} style={styles.requestContainer}>
-            <Text style={styles.requestText}>{request}</Text>
-            <View>
-              <Button title="Accept" onPress={() => handleAccept(request)} />
-              <Button title="Reject" onPress={() => handleReject(request)} />
+        {requests.length > 0 ? (
+          requests.map((request) => (
+            <View key={request} style={styles.requestContainer}>
+              <Text style={styles.requestText}>{request}</Text>
+              <View style={styles.buttonGroup}>
+                <TouchableOpacity
+                  style={styles.acceptButton}
+                  onPress={() => handleAccept(request)}
+                >
+                  <Text style={styles.buttonText}>수락</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.rejectButton}
+                  onPress={() => handleReject(request)}
+                >
+                  <Text style={styles.buttonText}>거절</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ))}
+          ))
+        ) : (
+          <Text style={styles.emptyMessage}>친구 요청이 없습니다</Text>
+        )}
       </View>
     </ScrollView>
   );
@@ -101,25 +116,79 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flex: 1,
     backgroundColor: "#fc493e",
+    paddingTop: 100,
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingTop: 80,
-    paddingHorizontal: 30,
+    justifyContent: "space-between",
+  },
+  textStyle: {
+    color: "white",
     marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "bold",
+    marginLeft: 30,
+  },
+
+  closeButtonContainer: {
+    marginRight: 30,
+    marginTop: 4,
+    width: 20,
+    height: 20,
+  },
+  closeButton: {
+    flex: 1,
+    width: 20,
+    height: 20,
   },
   bodyStyle: {
     flex: 1,
-    marginTop: 30,
+    paddingHorizontal: 20,
   },
-  closeButtonContainer: {
-    alignSelf: "flex-end",
-    paddingBottom: 20,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
-  closeButton: {
-    width: 20,
-    height: 20,
+  requestContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  requestText: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  buttonGroup: {
+    flexDirection: "row",
+  },
+  acceptButton: {
+    backgroundColor: "#34C759", // Green
+    borderRadius: 5,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginRight: 10,
+  },
+  rejectButton: {
+    backgroundColor: "#FF3B30", // Red
+    borderRadius: 5,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  emptyMessage: {
+    fontSize: 18,
+    color: "#888",
+    textAlign: "center",
+    marginTop: 20,
   },
 });
 
