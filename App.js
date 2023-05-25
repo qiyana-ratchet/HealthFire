@@ -13,15 +13,45 @@ import WorkoutDetailScreen from "./screens/WorkoutDetailScreen";
 import WorkoutDetailScreen2 from "./screens/WorkoutDetailScreen2";
 import AddFriendScreen from "./screens/FirendScreen/AddFriendScreen";
 import RequestFriendScreen from "./screens/FirendScreen/FriendRequest";
+import { Ionicons } from "@expo/vector-icons";
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function MainTabs() {
   // 메인 화면의 탭 네비게이션
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          // You can add more cases as you need
+          if (route.name === "Home") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "운동 친구") {
+            iconName = focused ? "people" : "people-outline";
+          } else if (route.name === "Ranking") {
+            iconName = focused ? "podium" : "podium-outline";
+          } else if (route.name === "Workout") {
+            iconName = focused ? "fitness" : "fitness-outline";
+          }
+
+          // You can return any component that you like here!
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+      tabBarOptions={{
+        activeTintColor: "tomato",
+        inactiveTintColor: "gray",
+      }}
+    >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Friends" component={FriendScreen} />
+      <Tab.Screen
+        name="운동 친구"
+        component={FriendScreen}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen name="Ranking" component={RankingScreen} />
       <Tab.Screen name="Workout" component={WorkoutScreen} />
     </Tab.Navigator>
