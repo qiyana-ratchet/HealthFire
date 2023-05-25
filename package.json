@@ -22,12 +22,9 @@
     "firestore": "^1.1.6",
     "react": "18.2.0",
     "react-native": "0.71.7",
-<<<<<<< HEAD
     "react-native-dialog": "^9.3.0",
-=======
     "react-native-calendars": "^1.1298.0",
     "react-native-gesture-handler": "^2.9.0",
->>>>>>> master
     "react-native-elements": "^3.4.3",
     "react-native-gesture-handler": "^2.10.0",
     "react-native-picker-select": "^8.0.4",
