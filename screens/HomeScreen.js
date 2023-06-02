@@ -21,6 +21,9 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>메인 화면</Text>
+      </View>
       {user && (
         <View style={styles.profileContainer}>
           <Image style={styles.profileImage} source={{ uri: user.photoURL }} />
@@ -43,12 +46,17 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+  },
+  header: {
+    backgroundColor: "#fc493e",
+    paddingTop: 80,
   },
   title: {
+    textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
-    marginTop: 10,
+    marginBottom: 20,
+    color: "white",
   },
   subtitle: {
     fontSize: 20,

@@ -4,7 +4,6 @@ import {
   View,
   TouchableOpacity,
   Image,
-  ScrollView,
   FlatList,
 } from "react-native";
 import React, { useEffect, useState } from "react";
@@ -80,8 +79,12 @@ export default function FriendScreen({ navigation }) {
   const renderFriend = ({ item }) => {
     if (!item) return <View style={styles.emptyBlock}></View>; // empty block when there's no friend
     return (
-      <View style={styles.friendContainer}>
-        <Text style={styles.nickname}>{item}님</Text>
+      <View style={styles.friendBox}>
+        <View style={styles.friendWrapper}>
+          <View style={styles.friendContainer}>
+            <Text style={styles.nickname}>{item}님</Text>
+          </View>
+        </View>
       </View>
     );
   };
@@ -92,50 +95,54 @@ export default function FriendScreen({ navigation }) {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>운동 친구</Text>
-      </View>
-      <View style={styles.statsContainer}>
-        <View style={styles.column}>
-          <View style={styles.countContainer}>
-            <Text style={styles.statsText}>내 친구</Text>
-            <Text style={styles.countText}>{friendCount}명</Text>
+    <FlatList
+      style={styles.container}
+      data={displayFriends}
+      renderItem={renderFriend}
+      keyExtractor={(item, index) => index.toString()}
+      numColumns={2} // Show 2 friends per line
+      ListHeaderComponent={() => (
+        <View style={{ paddingBottom: 20 }}>
+          <View style={styles.header}>
+            <Text style={styles.title}>운동 친구</Text>
+          </View>
+          <View style={styles.statsContainer}>
+            <View style={styles.column}>
+              <View style={styles.countContainer}>
+                <Text style={styles.statsText}>내 친구</Text>
+                <Text style={styles.countText}>{friendCount}명</Text>
+              </View>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.column}>
+              <View style={styles.countContainer}>
+                <Text style={styles.statsText}>받은 요청</Text>
+                <Text style={styles.countText}>{requestCount}명</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={handleAddFriend}
+            >
+              <Image
+                source={require("../../assets/addFriendIcon.png")}
+                style={styles.addIcon}
+              />
+              <Text style={styles.addButtonText}>친구 추가</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.requestButton}
+              onPress={handleRequestFriend}
+            >
+              <Text style={styles.requestButtonText}>친구 요청</Text>
+              {requestCount > 0 && <View style={styles.notificationCircle} />}
+            </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.divider} />
-        <View style={styles.column}>
-          <View style={styles.countContainer}>
-            <Text style={styles.statsText}>받은 요청</Text>
-            <Text style={styles.countText}>{requestCount}명</Text>
-          </View>
-        </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddFriend}>
-          <Image
-            source={require("../../assets/addFriendIcon.png")}
-            style={styles.addIcon}
-          />
-          <Text style={styles.addButtonText}>친구 추가</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.requestButton}
-          onPress={handleRequestFriend}
-        >
-          <Text style={styles.requestButtonText}>친구 요청</Text>
-          {requestCount > 0 && <View style={styles.notificationCircle} />}
-        </TouchableOpacity>
-      </View>
-      <View style={styles.friendWrapper}>
-        <FlatList
-          data={displayFriends}
-          renderItem={renderFriend}
-          keyExtractor={(item, index) => index.toString()}
-          numColumns={2} // Show 2 friends per line
-        />
-      </View>
-    </ScrollView>
+      )}
+    />
   );
 }
 
@@ -143,25 +150,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   header: {
     backgroundColor: "#fc493e",
-    paddingTop: 100,
+    paddingTop: 80,
   },
   title: {
     textAlign: "center",
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
     color: "white",
   },
   addButton: {
     flexDirection: "row",
-    width: 180,
+    width: 200,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fc493e",
     borderRadius: 10,
-    height: 55,
+    height: 50,
     flex: 1,
     borderRadius: 10,
     marginRight: 10,
@@ -178,15 +186,14 @@ const styles = StyleSheet.create({
   },
   requestButton: {
     flexDirection: "row",
-    width: 180,
+    width: 200,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#252525",
     borderRadius: 10,
-    height: 55,
+    height: 50,
     flex: 1,
     borderRadius: 10,
-    marginLeft: 10,
   },
 
   addIcon: {
@@ -225,19 +232,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 700,
   },
-  friendContainer: {
-    backgroundColor: "#ffffff",
-    flex: 1,
-    borderRadius: 10,
-    justifyContent: "flex-end",
-    margin: 10,
-    padding: 20,
-    height: 200,
-  },
+
   buttonContainer: {
     flex: 1,
     flexDirection: "row",
-    marginHorizontal: 35,
+    gap: 10,
+    marginHorizontal: 20,
   },
   profileImage: {
     width: 100,
@@ -266,16 +266,23 @@ const styles = StyleSheet.create({
   },
   friendWrapper: {
     flex: 1,
-    flexDirection: "row",
-    marginHorizontal: 25,
-    marginTop: 10,
+    padding: 10,
+    marginHorizontal: 11,
+  },
+  friendContainer: {
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    justifyContent: "flex-end",
+    height: 180,
+    padding: 5,
   },
 
   emptyBlock: {
     backgroundColor: "transparent",
     flex: 1,
     borderRadius: 10,
-    margin: 10,
-    padding: 20,
+  },
+  friendBox: {
+    flex: 1,
   },
 });

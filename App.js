@@ -27,33 +27,40 @@ function MainTabs() {
           let iconName;
 
           // You can add more cases as you need
-          if (route.name === "Home") {
+          if (route.name === "홈") {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "운동 친구") {
             iconName = focused ? "people" : "people-outline";
-          } else if (route.name === "Ranking") {
+          } else if (route.name === "랭킹") {
             iconName = focused ? "podium" : "podium-outline";
-          } else if (route.name === "Workout") {
+          } else if (route.name === "운동 기록") {
             iconName = focused ? "fitness" : "fitness-outline";
           }
 
           // You can return any component that you like here!
+          color = focused ? "tomato" : "gray";
           return <Ionicons name={iconName} size={size} color={color} />;
         },
+        tabBarActiveTintColor: "tomato",
+        tabBarInactiveTintColor: "gray",
       })}
-      tabBarOptions={{
-        activeTintColor: "tomato",
-        inactiveTintColor: "gray",
-      }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen
+        name="홈"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen
         name="운동 친구"
         component={FriendScreen}
         options={{ headerShown: false }}
       />
-      <Tab.Screen name="Ranking" component={RankingScreen} />
-      <Tab.Screen name="Workout" component={WorkoutScreen} />
+      <Tab.Screen
+        name="랭킹"
+        component={RankingScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen name="운동 기록" component={WorkoutScreen} />
     </Tab.Navigator>
   );
 }
@@ -63,7 +70,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Main"
           component={MainTabs}
