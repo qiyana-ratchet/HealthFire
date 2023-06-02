@@ -1,9 +1,11 @@
 import {
+  ScrollView,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   FlatList,
+  Button,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,6 +20,9 @@ import { app, auth } from "../FirebaseConfig";
 export default function RankingScreen({ navigation }) {
   const [volumeRanking, setVolumeRanking] = useState([]);
   const [calorieRanking, setCalorieRanking] = useState([]);
+  const [selectedRanking, setSelectedRanking] = useState("volume");
+  const [friendCount, setFriendCount] = useState(null);
+  const [requestCount, setRequestCount] = useState(null);
 
   const db = getFirestore();
 
@@ -53,78 +58,155 @@ export default function RankingScreen({ navigation }) {
 
       setVolumeRanking(volumeRanking);
       setCalorieRanking(calorieRanking);
+
+      const friendCount = userDocSnap.data().friend?.length || 0;
+      const requestCount = userDocSnap.data().requests?.length || 0;
+
+      setFriendCount(friendCount);
+      setRequestCount(requestCount);
     };
 
     fetchRankings();
   }, []);
 
+  const selectRanking = (rankingType) => {
+    setSelectedRanking(rankingType);
+  };
+
   const renderRanking = ({ item, index }) => (
     <View style={styles.item}>
       <Text style={styles.name}>{item.nickname}</Text>
       <Text style={styles.rank}>{index + 1}</Text>
-      <Text style={styles.volume}>{item.volume}</Text>
-      <Text style={styles.calories}>{item.calories}</Text>
+      <Text style={styles[selectedRanking]}>{item[selectedRanking]}</Text>
+    </View>
+  );
+
+  const Header = () => (
+    <View style={styles.headerContainer}>
+      <View style={styles.header}>
+        <Text style={styles.title}>운동 랭킹</Text>
+      </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={
+            selectedRanking === "volume" ? styles.buttonSelected : styles.button
+          }
+          onPress={() => selectRanking("volume")}
+        >
+          <Text style={styles.buttonText}>총 볼륨순 랭킹</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={
+            selectedRanking === "calories"
+              ? styles.buttonSelected
+              : styles.button
+          }
+          onPress={() => selectRanking("calories")}
+        >
+          <Text style={styles.buttonText}>총 칼로리 소모 랭킹</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>운동 랭킹</Text>
-      <Text style={styles.subtitle}>볼륨 랭킹</Text>
-      <FlatList
-        data={volumeRanking}
-        renderItem={renderRanking}
-        keyExtractor={(item, index) => index.toString()}
-      />
-      <Text style={styles.subtitle}>칼로리 랭킹</Text>
-      <FlatList
-        data={calorieRanking}
-        renderItem={renderRanking}
-        keyExtractor={(item, index) => index.toString()}
-      />
-    </View>
+    <FlatList
+      ListHeaderComponent={Header}
+      style={styles.container}
+      data={selectedRanking === "volume" ? volumeRanking : calorieRanking}
+      renderItem={renderRanking}
+      keyExtractor={(item, index) => index.toString()}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "#f2f2f2",
+  },
+  headerContainer: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  header: {
+    backgroundColor: "#fc493e",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingTop: 80,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  subtitle: {
+    textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 10,
+    marginBottom: 20,
+    color: "white",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#fff",
+    marginTop: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  button: {
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: "#D3D3D3",
+  },
+  buttonSelected: {
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: "#fc493e",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+  },
+  listContainer: {
+    marginTop: 30,
   },
   item: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    marginVertical: 8,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   name: {
-    fontSize: 18,
+    fontSize: 20,
   },
   rank: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
   },
   volume: {
-    fontSize: 16,
-    color: "#888",
+    fontSize: 20,
   },
   calories: {
-    fontSize: 16,
-    color: "#888",
+    fontSize: 20,
   },
 });

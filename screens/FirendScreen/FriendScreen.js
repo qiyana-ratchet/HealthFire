@@ -79,9 +79,11 @@ export default function FriendScreen({ navigation }) {
   const renderFriend = ({ item }) => {
     if (!item) return <View style={styles.emptyBlock}></View>; // empty block when there's no friend
     return (
-      <View style={styles.friendWrapper}>
-        <View style={styles.friendContainer}>
-          <Text style={styles.nickname}>{item}님</Text>
+      <View style={styles.friendBox}>
+        <View style={styles.friendWrapper}>
+          <View style={styles.friendContainer}>
+            <Text style={styles.nickname}>{item}님</Text>
+          </View>
         </View>
       </View>
     );
@@ -100,7 +102,7 @@ export default function FriendScreen({ navigation }) {
       keyExtractor={(item, index) => index.toString()}
       numColumns={2} // Show 2 friends per line
       ListHeaderComponent={() => (
-        <View>
+        <View style={{ paddingBottom: 20 }}>
           <View style={styles.header}>
             <Text style={styles.title}>운동 친구</Text>
           </View>
@@ -151,11 +153,11 @@ const styles = StyleSheet.create({
 
   header: {
     backgroundColor: "#fc493e",
-    paddingTop: 100,
+    paddingTop: 80,
   },
   title: {
     textAlign: "center",
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
     color: "white",
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fc493e",
     borderRadius: 10,
-    height: 55,
+    height: 50,
     flex: 1,
     borderRadius: 10,
     marginRight: 10,
@@ -189,10 +191,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#252525",
     borderRadius: 10,
-    height: 55,
+    height: 50,
     flex: 1,
     borderRadius: 10,
-    marginLeft: 10,
   },
 
   addIcon: {
@@ -231,17 +232,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 700,
   },
-  friendContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    justifyContent: "flex-end",
-    height: 200,
-    padding: 10,
-  },
+
   buttonContainer: {
     flex: 1,
     flexDirection: "row",
-    marginHorizontal: 10,
+    gap: 10,
+    marginHorizontal: 20,
   },
   profileImage: {
     width: 100,
@@ -270,14 +266,23 @@ const styles = StyleSheet.create({
   },
   friendWrapper: {
     flex: 1,
-    padding: 20, // 좌우 간격을 조정하여 버튼과 동일하게 맞춤
-    marginTop: 10,
+    padding: 10,
+    marginHorizontal: 11,
+  },
+  friendContainer: {
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    justifyContent: "flex-end",
+    height: 180,
+    padding: 5,
   },
 
   emptyBlock: {
     backgroundColor: "transparent",
     flex: 1,
     borderRadius: 10,
-    margin: 10,
+  },
+  friendBox: {
+    flex: 1,
   },
 });

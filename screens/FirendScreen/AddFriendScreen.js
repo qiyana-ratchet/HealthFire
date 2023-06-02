@@ -139,14 +139,14 @@ const styles = StyleSheet.create({
   header: {
     flex: 1,
     backgroundColor: "#fc493e",
-    paddingTop: 100,
+    paddingTop: 80,
     flexDirection: "row",
     justifyContent: "space-between",
   },
   textStyle: {
     color: "white",
     marginBottom: 20,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     marginLeft: 30,
   },
