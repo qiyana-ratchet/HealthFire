@@ -75,9 +75,8 @@ export default function RankingScreen({ navigation }) {
 
   const renderRanking = ({ item, index }) => (
     <View style={styles.item}>
+      <Text style={styles.rank}>{index + 1}등</Text>
       <Text style={styles.name}>{item.nickname}</Text>
-      <Text style={styles.rank}>{index + 1}</Text>
-      <Text style={styles[selectedRanking]}>{item[selectedRanking]}</Text>
     </View>
   );
 
@@ -176,11 +175,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   listContainer: {
+    flex: 1,
     marginTop: 30,
+    alignItems: "center",
+    justifyContent: "center",
   },
   item: {
+    flex: 1,
+    width: "90%",
     flexDirection: "row",
     justifyContent: "space-between",
+    textAlign: "center",
     marginVertical: 8,
     padding: 20,
     backgroundColor: "white",
@@ -189,8 +194,8 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
       },
       android: {
         elevation: 3,
