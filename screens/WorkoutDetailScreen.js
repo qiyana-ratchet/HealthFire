@@ -43,7 +43,7 @@ export default function WorkoutDetailScreen({route, navigation}) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>운동 랭킹</Text>
+        <Text style={styles.title}>운동 기록</Text>
       </View>
       <View style={styles.filterContainer}>
         {filters.map(filter => (
@@ -140,11 +140,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectCompleteButton: {
-    backgroundColor: '#333',
-    borderRadius: 16,
-    paddingVertical: 12,
+    backgroundColor: '#fc493e',
+    borderRadius: 8,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: 8,
+    marginVertical: 16,
+    marginBottom: 46,
   },
   selectCompleteButtonText: {
     color: '#fff',
