@@ -17,7 +17,7 @@ const exercises = [
 ];
 
 export default function WorkoutDetailScreen2({ route, navigation }) {
-  const { selectedExercises } = route.params;
+  const { selectedDate, selectedExercises } = route.params;
 
   const [sets, setSets] = useState({});
 
@@ -51,7 +51,8 @@ export default function WorkoutDetailScreen2({ route, navigation }) {
     const year = currentDate.getFullYear();
     const month = String(currentDate.getMonth() + 1).padStart(2, '0');
     const day = String(currentDate.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
+    // const formattedDate = `${year}-${month}-${day}`;
+    const formattedDate = selectedDate;
     // 수정된 부분 끝
 
     try {
@@ -93,6 +94,10 @@ export default function WorkoutDetailScreen2({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>운동 기록</Text>
+      </View>
+
       <ScrollView>
         {selectedExercises.map(exerciseId => {
           const exercise = exercises.find(exercise => exercise.id === exerciseId);
@@ -111,7 +116,7 @@ export default function WorkoutDetailScreen2({ route, navigation }) {
               </View>
               {exerciseSets.map((set, setIndex) => (
                 <View key={setIndex} style={styles.setContainer}>
-                  <Text style={styles.setNumber}>Set {setIndex + 1}</Text>
+                  <Text style={styles.setNumber}>Set {setIndex + 1} :</Text>
                   <View style={styles.setInputContainer}>
                     {exercise.valueType === 'count' && (
                       <>
@@ -167,10 +172,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
+  },
+  header: {
+    backgroundColor: "#fc493e",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingTop: 80,
+    width: '100%',
+  },
+  title: {
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "white",
   },
   exerciseContainer: {
     marginBottom: 16,
+    marginTop: 16,
   },
   exerciseHeader: {
     flexDirection: 'row',
@@ -181,12 +200,14 @@ const styles = StyleSheet.create({
   exerciseName: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 16,
   },
   addSetButton: {
     backgroundColor: '#333',
     borderRadius: 16,
     width: 32,
     height: 32,
+    marginRight: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -202,10 +223,12 @@ const styles = StyleSheet.create({
   setNumber: {
     fontSize: 16,
     marginRight: 8,
+    marginLeft: 16,
   },
   setInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+
   },
   setTextInput: {
     borderWidth: 1,
@@ -214,18 +237,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     height: 40,
     marginRight: 8,
+    marginLeft: 8,
   },
   setInputLabel: {
     fontSize: 16,
   },
   completeButton: {
-    backgroundColor: '#333',
+    backgroundColor: '#fc493e',
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 8,
     marginVertical: 16,
+    marginBottom: 46,
   },
   completeButtonText: {
     color: '#fff',

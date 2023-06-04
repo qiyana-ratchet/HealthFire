@@ -22,8 +22,9 @@ const exercises = [
   {id: 10, name: '플랭크'},
 ];
 
-export default function WorkoutDetailScreen({navigation}) {
+export default function WorkoutDetailScreen({route, navigation}) {
   const [selectedExercises, setSelectedExercises] = useState([]);
+  const { selectedDate } = route.params; // 선택된 날짜 받기
 
   const toggleExerciseSelection = (exerciseId) => {
     const index = selectedExercises.indexOf(exerciseId);
@@ -35,11 +36,15 @@ export default function WorkoutDetailScreen({navigation}) {
   };
 
   const handleSelectComplete = () => {
-    navigation.navigate('WorkoutDetail2', {selectedExercises});
+    navigation.navigate('WorkoutDetail2', {selectedExercises, selectedDate});
+    console.log('selectedDate',selectedDate)
   };
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>운동 기록</Text>
+      </View>
       <View style={styles.filterContainer}>
         {filters.map(filter => (
           <TouchableOpacity key={filter} style={styles.filter}>
@@ -74,12 +79,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
+  },
+  header: {
+    backgroundColor: "#fc493e",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingTop: 80,
+    width: '100%',
+  },
+  title: {
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "white",
   },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 16,
+    padding: 16,
   },
   filter: {
     paddingVertical: 8,
@@ -108,22 +127,27 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 4,
     marginRight: 8,
+    marginLeft: 16,
   },
   checkbox: {
-    width: 14,
-    height: 14,
-    backgroundColor: '#333',
-    borderRadius: 2,
+    width: 24,
+    height: 24,
+    backgroundColor: '#fc493e',
+    borderRadius: 4,
+    borderColor: '#fc493e',
   },
   exerciseName: {
     fontSize: 16,
   },
   selectCompleteButton: {
-    backgroundColor: '#333',
-    borderRadius: 16,
-    paddingVertical: 12,
+    backgroundColor: '#fc493e',
+    borderRadius: 8,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: 8,
+    marginVertical: 16,
+    marginBottom: 46,
   },
   selectCompleteButtonText: {
     color: '#fff',
