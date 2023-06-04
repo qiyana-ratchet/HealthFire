@@ -1,8 +1,8 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
+import {StyleSheet, Text, View} from "react-native";
+import {NavigationContainer} from "@react-navigation/native";
+import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
+import {createStackNavigator} from "@react-navigation/stack";
 import LoginScreen from "./screens/LoginScreen";
 import HomeScreen from "./screens/HomeScreen";
 import FriendScreen from "./screens/FirendScreen/FriendScreen";
@@ -13,7 +13,7 @@ import WorkoutDetailScreen from "./screens/WorkoutDetailScreen";
 import WorkoutDetailScreen2 from "./screens/WorkoutDetailScreen2";
 import AddFriendScreen from "./screens/FirendScreen/AddFriendScreen";
 import RequestFriendScreen from "./screens/FirendScreen/FriendRequest";
-import { Ionicons } from "@expo/vector-icons";
+import {Ionicons} from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -22,8 +22,8 @@ function MainTabs() {
   // 메인 화면의 탭 네비게이션
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+      screenOptions={({route}) => ({
+        tabBarIcon: ({focused, color, size}) => {
           let iconName;
 
           // You can add more cases as you need
@@ -39,7 +39,7 @@ function MainTabs() {
 
           // You can return any component that you like here!
           color = focused ? "tomato" : "gray";
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName} size={size} color={color}/>;
         },
         tabBarActiveTintColor: "tomato",
         tabBarInactiveTintColor: "gray",
@@ -48,19 +48,19 @@ function MainTabs() {
       <Tab.Screen
         name="홈"
         component={HomeScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Tab.Screen
         name="운동 친구"
         component={FriendScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Tab.Screen
         name="랭킹"
         component={RankingScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
-      <Tab.Screen name="운동 기록" component={WorkoutScreen} />
+      <Tab.Screen name="운동 기록" component={WorkoutScreen}/>
     </Tab.Navigator>
   );
 }
@@ -73,25 +73,33 @@ export default function App() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
         <Stack.Screen
           name="Main"
           component={MainTabs}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
-        <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
-        <Stack.Screen name="WorkoutDetail2" component={WorkoutDetailScreen2} />
+        <Stack.Screen name="SignUp" component={SignUpScreen}/>
+        <Stack.Screen
+          name="WorkoutDetail"
+          component={WorkoutDetailScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="WorkoutDetail2"
+          component={WorkoutDetailScreen2}
+          options={{headerShown: false}}
+        />
         <Stack.Screen
           name="AddFriend"
           component={AddFriendScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
         <Stack.Screen
           name="RequestFriend"
           component={RequestFriendScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

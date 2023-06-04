@@ -17,7 +17,7 @@ const exercises = [
 ];
 
 export default function WorkoutDetailScreen2({ route, navigation }) {
-  const { selectedExercises } = route.params;
+  const { selectedDate, selectedExercises } = route.params;
 
   const [sets, setSets] = useState({});
 
@@ -51,7 +51,8 @@ export default function WorkoutDetailScreen2({ route, navigation }) {
     const year = currentDate.getFullYear();
     const month = String(currentDate.getMonth() + 1).padStart(2, '0');
     const day = String(currentDate.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
+    // const formattedDate = `${year}-${month}-${day}`;
+    const formattedDate = selectedDate;
     // 수정된 부분 끝
 
     try {
