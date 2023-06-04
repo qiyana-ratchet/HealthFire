@@ -35,7 +35,6 @@ export default function WorkoutScreen({ navigation }) {
   const userDoc = doc(userCollection, email);
 
   const [buttonColor, setButtonColor] = useState('#D9D9D9');
-  const [done, setDone] = useState(false);
 
   //달력에 기록된 날짜 표시
   const fetchMarkedDates = async () => { // docs를 불러와서 점을 다시 찍어
@@ -72,10 +71,20 @@ export default function WorkoutScreen({ navigation }) {
   const handleDayPress = async (date) => {
     setSelectedDate(date.dateString); //이게 왜 업데이트가 안되냐?
 
+
+    setMarkedDates((prevMarkedDates) => ({
+      ...prevMarkedDates,
+      [selectedDate]: {...prevMarkedDates[selectedDate], selected: false},
+      [date.dateString]: {...prevMarkedDates[date.dateString], selected: true, selectedColor: '#00BD00'},
+    }));
+
+    setSelectedDate(date.dateString);
+
+
     console.log("A");
 
     const dateRef = doc(collection(userDoc, 'exercise'), date.dateString); //전에 눌린거
-    const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.
+    const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.₩
 
     if (dateDoc.exists()) { //이 레퍼런스가 존재하면
 
@@ -117,85 +126,6 @@ export default function WorkoutScreen({ navigation }) {
     };
   }
 
-  //이 값이 바뀌면 렌더링을 다시해? 
-  // useEffect(() => {
-
-  //   async function dd(){
-  //     const dateRef = doc(collection(userDoc, 'exercise'), selectedDate); //전에 눌린거
-  //     const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.
-
-  //     if(dateDoc.exists()){
-  //       setExerciseData(dateDoc.data());
-  //     }
-
-  //   }
-
-  //   dd();
-
-  //   console.log("set 직후 exerciseData:", exerciseData);
-  //   console.log("set 직후 keys:", keys);
-
-  // },[selectedDate]);
-
-  // useEffect(()=>{
-
-  //   if(exerciseData){
-  //     setExerciseData(exerciseData);
-  //   }
-
-  //   console.log("set 후 exerciseData:", exerciseData);
-  //   console.log("set 직후 keys:", keys);
-
-  // },[exerciseData]);
-
-  // useEffect(()=> {
-  //   if(keys) {
-
-  //   }
-  // }, [keys]);
-
-
-
-
-  //리렌더링 되면서 그전의 값이 왜 계속되냐
-  //선택날짜 동기화
-  // useEffect(() => {
-  //   console.log("-----------------------------------------");
-  //   console.log("운동 날짜 : ", selectedDate);
-  //   console.log("운동 데이터 : " , exerciseData); 
-  //   console.log("운동 종류 : ",keys);
-  //   console.log("B");
-
-  //   if (selectedDate && exerciseData && keys) {
-  //     try{
-  //       console.log("C");
-  //       console.log("운동 날짜 : ", selectedDate);
-  //       console.log("운동 데이터 : " , exerciseData); //안바뀜
-  //       console.log("운동 종류 : ",keys); //안바뀜
-  //     }catch{
-  //       console.log("error", error);
-  //     }
-  //   }
-
-  //   console.log("\n\n");
-
-  // },[selectedDate, keys, exerciseData]);
-
-  //useEffect : 시작될때 반드시 한번 실행된다.
-  //운동날짜에 ''이게 null인가? false래.
-  //set할때마다 userEffect로 바로 가는게 맞는듯.
-
-
-  // useEffect(() => {
-  //   console.log("exerciseData",exerciseData); //바뀐 후
-  // }, [exerciseData]);
-
-
-  // useEffect(() => {
-
-  // }, []);
-
-
 
   const handleExerciseButtonPress = () => {
     navigation.navigate('WorkoutDetail', {selectedDate: selectedDate}); // 메인 화면으로 이동
@@ -228,32 +158,35 @@ export default function WorkoutScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.calendarcontainer}>
       <Calendar
         theme={{
-          backgroundColor: '#ffffff',
+          backgroundColor: '#D9D9D9',
           calendarBackground: '#ffffff',
-          textSectionTitleColor: '#b6c1cd',
+          textSectionTitleColor: 'grey',
           selectedDayBackgroundColor: '#00adf5',
           selectedDayTextColor: '#ffffff',
-          todayTextColor: '#00adf5',
+          todayTextColor: 'red',
           dayTextColor: '#2d4150',
           textDisabledColor: '#d9e1e8',
           dotColor: '#00adf5',
-          selectedDotColor: '#ffffff',
-          arrowColor: 'orange',
-          monthTextColor: 'blue',
+          selectedDotColor: 'red',
+          arrowColor: 'red',
+          monthTextColor: 'red',
           indicatorColor: 'blue',
           textDayFontWeight: '300',
           textMonthFontWeight: 'bold',
           textDayHeaderFontWeight: '300',
-          textDayFontSize: 12,
+          textDayFontSize: 16,
           textMonthFontSize: 16,
-          textDayHeaderFontSize: 16,
+          textDayHeaderFontSize: 15,
         }}
 
         style={styles.calendar}
         markedDates={markedDates} //이거 하나인데?
         onDayPress={handleDayPress} />
+      </View>
+     
 
 
       {/* <Text>Selected Date: {selectedDate} </Text> */}
@@ -356,29 +289,32 @@ export default function WorkoutScreen({ navigation }) {
 
 
 
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  calendarcontainer: {
   },
   calendar: {
     width: 360,
     margin: 10,
     borderRadius: 1,
+    alignSelf: 'center',
+    borderRadius: 20,
   },
   headerText: {
     color: 'red',
   },
   exerciseButton: {
-    width: 350,
+    width: 360,
     height: 50,
-    marginTop: 20,
+    marginTop: 0,
     backgroundColor: '#FC493E',
     borderRadius: 10,
     // padding: 10,
@@ -399,15 +335,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: 370,
-    paddingBottom: 20,
+    marginBottom: 60,
     // backgroundColor: '#F7F7F7',
   },
   exerciseContainer: {
     borderRadius: 10,
     borderColor: '#FC493E',
     borderWidth: '1',
-    width: 350,
-    margin: 10,
+    width: 360,
+    marginLeft: 5,
+    marginRight: 5,
+    marginBottom: 10,
     backgroundColor: 'white',
   },
   setContainer: {
