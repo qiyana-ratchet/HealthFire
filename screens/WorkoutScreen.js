@@ -27,6 +27,10 @@ export default function WorkoutScreen({ navigation }) {
   const [selectedDate, setSelectedDate] = useState('');
   const [markedDates, setMarkedDates] = useState({});
   const [exerciseData, setExerciseData] = useState(null);
+  const [totalKg, setTotalKg] = useState(0);
+  const [totalKcal, setTotalKcal] = useState(0);
+  const [done, setDone] = useState(false);
+  const [perc, setPerc] = useState(0);
 
   const user = auth.currentUser;
   const email = user ? user.email : '';
@@ -69,19 +73,15 @@ export default function WorkoutScreen({ navigation }) {
 
   //날짜 선택됐을 때 
   const handleDayPress = async (date) => {
-    setSelectedDate(date.dateString); //이게 왜 업데이트가 안되냐?
-
 
     setMarkedDates((prevMarkedDates) => ({
       ...prevMarkedDates,
-      [selectedDate]: {...prevMarkedDates[selectedDate], selected: false},
-      [date.dateString]: {...prevMarkedDates[date.dateString], selected: true, selectedColor: '#00BD00'},
+      [selectedDate]: { ...prevMarkedDates[selectedDate], selected: false },
+      [date.dateString]: { ...prevMarkedDates[date.dateString], selected: true, selectedColor: '#00BD00' },
     }));
 
     setSelectedDate(date.dateString);
 
-
-    console.log("A");
 
     const dateRef = doc(collection(userDoc, 'exercise'), date.dateString); //전에 눌린거
     const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.₩
@@ -92,13 +92,85 @@ export default function WorkoutScreen({ navigation }) {
       // setKeys(Object.keys(dateDoc.data())); //렌더링에 쓰지마
 
     } else {
-      console.log("D");
       setExerciseData(null); //usereffect로가
     }
+
+    // countTotalVol();
 
 
 
   };
+
+  // const countTotalVol = () => {
+  //   console.log(exerciseData[1]);
+  //   // exerciseData.forEach(([key, value]) => {
+  //   //   value.forEach((exerciseItem) => { //value는 1,3,5
+  //   //     if (exerciseItem.done) {
+  //   //       // console.log(exerciseItem.done);
+  //   //       console.log(exerciseItem.kg);
+  //   //     }
+  //   //   });
+  //   // });
+  // };
+
+  useEffect(() => {
+    let totalKg = 0;
+    let totalKcal = 0;
+    let totalSet = 0;
+    let acheiveSet = 0;
+    let percentage = 0;
+
+    if (exerciseData) {
+      Object.keys(exerciseData).forEach((key) => { //key: 1,3,5..
+        const items = exerciseData[key];
+        totalSet += 1;
+        if (key <= 7) { //근육 
+          items.forEach((item) => {
+            if (item.done && item.kg) {
+              totalKg += parseFloat(item.kg) * parseFloat(item.count);
+              acheiveSet += 1;
+            }
+          });
+        } else if (key == 8) { //유산소 - 조깅
+          items.forEach((item) => {
+            if (item.done && item.time) {
+              totalKcal += 13 * parseFloat(item.time);
+              acheiveSet += 1;
+            }
+          });
+        } else if (key == 9) { //유산소 
+          items.forEach((item) => {
+            if (item.done && item.time) {
+              totalKcal += 9 * parseFloat(item.time);
+              acheiveSet += 1;
+            }
+          });
+        } else if (key == 10) { //유산소
+          items.forEach((item) => {
+            if (item.done && item.time) {
+              totalKcal += 4 * parseFloat(item.time);
+              acheiveSet += 1;
+            }
+          });
+        }
+      });
+    }
+
+    percentage = Math.round((acheiveSet / totalSet) * 100);
+
+
+    setTotalKg(totalKg);
+    setTotalKcal(totalKcal);
+    setPerc(percentage);
+    // // console.log(totalSet);
+
+
+
+    // console.log(percentage);
+
+  }, [exerciseData, done]);
+
+
 
   function getKeyText(key) {
     if (key === '1') {
@@ -128,7 +200,7 @@ export default function WorkoutScreen({ navigation }) {
 
 
   const handleExerciseButtonPress = () => {
-    navigation.navigate('WorkoutDetail', {selectedDate: selectedDate}); // 메인 화면으로 이동
+    navigation.navigate('WorkoutDetail', { selectedDate: selectedDate }); // 메인 화면으로 이동
     // 운동 선택 페이지로 이동하는 코드
   };
 
@@ -136,6 +208,8 @@ export default function WorkoutScreen({ navigation }) {
     const newColor = buttonColor === '#FC493E' ? '#D9D9D9' : '#FC493E';
 
     setButtonColor(newColor);
+    setDone(!done);
+    console.log(done);
 
 
     const dateRef = doc(collection(userDoc, 'exercise'), selectedDate);
@@ -159,34 +233,34 @@ export default function WorkoutScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.calendarcontainer}>
-      <Calendar
-        theme={{
-          backgroundColor: '#D9D9D9',
-          calendarBackground: '#ffffff',
-          textSectionTitleColor: 'grey',
-          selectedDayBackgroundColor: '#00adf5',
-          selectedDayTextColor: '#ffffff',
-          todayTextColor: 'red',
-          dayTextColor: '#2d4150',
-          textDisabledColor: '#d9e1e8',
-          dotColor: '#00adf5',
-          selectedDotColor: 'red',
-          arrowColor: 'red',
-          monthTextColor: 'red',
-          indicatorColor: 'blue',
-          textDayFontWeight: '300',
-          textMonthFontWeight: 'bold',
-          textDayHeaderFontWeight: '300',
-          textDayFontSize: 16,
-          textMonthFontSize: 16,
-          textDayHeaderFontSize: 15,
-        }}
+        <Calendar
+          theme={{
+            backgroundColor: '#D9D9D9',
+            calendarBackground: '#ffffff',
+            textSectionTitleColor: 'grey',
+            selectedDayBackgroundColor: '#00adf5',
+            selectedDayTextColor: '#ffffff',
+            todayTextColor: 'red',
+            dayTextColor: '#2d4150',
+            textDisabledColor: '#d9e1e8',
+            dotColor: '#00adf5',
+            selectedDotColor: 'red',
+            arrowColor: 'red',
+            monthTextColor: 'red',
+            indicatorColor: 'blue',
+            textDayFontWeight: '300',
+            textMonthFontWeight: 'bold',
+            textDayHeaderFontWeight: '300',
+            textDayFontSize: 16,
+            textMonthFontSize: 16,
+            textDayHeaderFontSize: 15,
+          }}
 
-        style={styles.calendar}
-        markedDates={markedDates} //이거 하나인데?
-        onDayPress={handleDayPress} />
+          style={styles.calendar}
+          markedDates={markedDates} //이거 하나인데?
+          onDayPress={handleDayPress} />
       </View>
-     
+
 
 
       {/* <Text>Selected Date: {selectedDate} </Text> */}
@@ -216,6 +290,30 @@ export default function WorkoutScreen({ navigation }) {
       {/* <Text>exercise Data: {exerciseData} </Text> */}
       {/* <Text>Keys: {keys} </Text> */}
       {/* <Text>markedDates: {markedDates} </Text> */}
+      <View>
+        {exerciseData ? (
+          <View style={styles.totalcontainer}>
+            <View style={styles.total}>
+              <Text style={styles.title}>총볼륨</Text>
+              <Text style={styles.contents}>{totalKg}</Text>
+            </View>
+
+            <View style={styles.total}>
+              <Text style={styles.title}>총칼로리</Text>
+              <Text style={styles.contents}>{totalKcal}</Text>
+            </View>
+
+            <View style={styles.total}>
+              <Text style={styles.title}>달성률</Text>
+              <Text style={styles.contents}>{perc}%</Text>
+            </View>
+          </View>
+        ): (
+          <Text></Text>
+        )}
+      </View>
+
+
 
 
       <ScrollView contentContainerStyle={styles.excontainer}>
@@ -299,8 +397,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  calendarcontainer: {
-  },
   calendar: {
     width: 360,
     margin: 10,
@@ -310,6 +406,31 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: 'red',
+  },
+  totalcontainer: {
+    // flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    // backgroundColor: 'black'
+  },
+  total: {
+    backgroundColor: '#FC493E',
+    marginLeft: 20,
+    marginRight: 20,
+    borderRadius: 50,
+    width: 70,
+    height: 50,
+    marginBottom:5,
+  },
+  title: {
+    padding: 5,
+    textAlign: 'center'
+  },
+  contents: {
+    textAlign: 'center',
+    color: 'white',
+    fontWeight: 'bold',
   },
   exerciseButton: {
     width: 360,
