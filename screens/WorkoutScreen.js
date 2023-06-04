@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Container, ScrollView } from 'react-native';
-import { Calendar } from 'react-native-calendars';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { firestore, auth } from '../FirebaseConfig'; //이파일에 쓰이는 export된 변수 firestore->우리의 firestore, auth
-import { collection, doc, getDoc, setDoc, getCollection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, getCollection, getDocs, updateDoc } from 'firebase/firestore';
 
 // const exercises = [
 //   {id: 1, name: '스쿼트'},
@@ -70,9 +70,7 @@ export default function WorkoutScreen({ navigation }) {
 
   //날짜 선택됐을 때 
   const handleDayPress = async (date) => {
-    // setSelectedDate(date.dateString); //이게 왜 업데이트가 안되냐?
-    // console.log("selectedData: ",selectedDate);
-
+    setSelectedDate(date.dateString); //이게 왜 업데이트가 안되냐?
 
     console.log("A");
 
@@ -82,9 +80,7 @@ export default function WorkoutScreen({ navigation }) {
     if (dateDoc.exists()) { //이 레퍼런스가 존재하면
 
       setExerciseData(dateDoc.data());
-      // setKeys(Object.keys(dateDoc.data())); //렌더링에 쓰지마.
-
-      setSelectedDate(date.dateString); //이게 왜 업데이트가 안되냐?
+      // setKeys(Object.keys(dateDoc.data())); //렌더링에 쓰지마
 
     } else {
       console.log("D");
@@ -202,24 +198,30 @@ export default function WorkoutScreen({ navigation }) {
 
 
   const handleExerciseButtonPress = () => {
-    navigation.navigate('WorkoutDetail'); // 메인 화면으로 이동
+    navigation.navigate('WorkoutDetail', {selectedDate: selectedDate}); // 메인 화면으로 이동
     // 운동 선택 페이지로 이동하는 코드
   };
 
-  const handleDoneButtonPress = (item) => { //몇번째 세트인지
+  const handleDoneButtonPress = async (item) => { //몇번째 세트인지
     const newColor = buttonColor === '#FC493E' ? '#D9D9D9' : '#FC493E';
-    // const newDone = !item.done;
 
     setButtonColor(newColor);
-    // setDone(newDone);
 
-    // // 파이어베이스에서 'done' 필드 값 업데이트
 
-    // docRef.update({ done: newDone });
-    // console.log("얘는 왜 계속눌려?");
+    const dateRef = doc(collection(userDoc, 'exercise'), selectedDate);
+    const updatedExerciseData = { ...exerciseData };
 
-    item.done = !item.done;
+    Object.entries(updatedExerciseData).forEach(([key, value]) => {
+      value.forEach((exerciseItem) => { //value는 1,3,5
+        if (exerciseItem === item) {
+          // console.log(exerciseItem.done);
+          exerciseItem.done = !exerciseItem.done;
 
+        }
+      });
+    });
+
+    await updateDoc(dateRef, updatedExerciseData);
 
   };
 
@@ -227,6 +229,28 @@ export default function WorkoutScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Calendar
+        theme={{
+          backgroundColor: '#ffffff',
+          calendarBackground: '#ffffff',
+          textSectionTitleColor: '#b6c1cd',
+          selectedDayBackgroundColor: '#00adf5',
+          selectedDayTextColor: '#ffffff',
+          todayTextColor: '#00adf5',
+          dayTextColor: '#2d4150',
+          textDisabledColor: '#d9e1e8',
+          dotColor: '#00adf5',
+          selectedDotColor: '#ffffff',
+          arrowColor: 'orange',
+          monthTextColor: 'blue',
+          indicatorColor: 'blue',
+          textDayFontWeight: '300',
+          textMonthFontWeight: 'bold',
+          textDayHeaderFontWeight: '300',
+          textDayFontSize: 12,
+          textMonthFontSize: 16,
+          textDayHeaderFontSize: 16,
+        }}
+
         style={styles.calendar}
         markedDates={markedDates} //이거 하나인데?
         onDayPress={handleDayPress} />
@@ -297,7 +321,7 @@ export default function WorkoutScreen({ navigation }) {
                     {item.done === false ? (
                       <View style={{ flex: 1, flexDirection: 'row-reverse', height: 25 }}>
                         <TouchableOpacity style={styles.doneFalseButton} onPress={() => handleDoneButtonPress(item)}>
-                          <Text style={styles.donebuttonText}> ✅ </Text>
+                          <Text style={styles.donebuttonText}> ☑️ </Text>
                         </TouchableOpacity>
 
                         {/* <Text>Done: {item.done.toString()}</Text> */}
@@ -305,7 +329,7 @@ export default function WorkoutScreen({ navigation }) {
                     ) : (
                       <View style={{ flex: 1, flexDirection: 'row-reverse', height: 25 }}>
                         <TouchableOpacity style={styles.doneTrueButton} onPress={() => handleDoneButtonPress(item)}>
-                          <Text style={styles.donebuttonText}> ☑️ </Text>
+                          <Text style={styles.donebuttonText}> ✅ </Text>
                         </TouchableOpacity>
 
                         {/* <Text>Done: {item.done.toString()}</Text> */}
@@ -321,7 +345,7 @@ export default function WorkoutScreen({ navigation }) {
           ))
         ) : (
           <View style={styles.container}>
-            <Text>기록이 없습니다.</Text>
+            {/* <Text>기록이 없습니다.</Text> */}
             <TouchableOpacity style={styles.exerciseButton} onPress={handleExerciseButtonPress} >
               <Text style={styles.buttonText}>운동 기록하기!!!</Text>
             </TouchableOpacity>
@@ -348,6 +372,9 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 1,
   },
+  headerText: {
+    color: 'red',
+  },
   exerciseButton: {
     width: 350,
     height: 50,
@@ -373,8 +400,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 370,
     paddingBottom: 20,
-    borderColor: '#FC493E',
-    // margin: 10,
+    // backgroundColor: '#F7F7F7',
   },
   exerciseContainer: {
     borderRadius: 10,
