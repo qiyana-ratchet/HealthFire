@@ -1,212 +1,190 @@
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-  Button,
-} from "react-native";
 import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import {
   doc,
   getDoc,
+  setDoc,
   collection,
   getDocs,
   getFirestore,
+  addDays,
+  startOfDay,
+  Timestamp,
 } from "firebase/firestore";
+
 import { app, auth } from "../FirebaseConfig";
 
-export default function RankingScreen({ navigation }) {
-  const [volumeRanking, setVolumeRanking] = useState([]);
-  const [calorieRanking, setCalorieRanking] = useState([]);
-  const [selectedRanking, setSelectedRanking] = useState("volume");
-  const [friendCount, setFriendCount] = useState(null);
-  const [requestCount, setRequestCount] = useState(null);
-
-  const db = getFirestore();
+const RankingScreen = ({ navigation }) => {
+  const [rankingData, setRankingData] = useState([]);
+  const [totalWeight, setTotalWeight] = useState(0);
+  const [totalTime, setTotalTime] = useState(0);
 
   useEffect(() => {
     const fetchRankings = async () => {
-      const currentUser = auth.currentUser.email;
-      const userDocRef = doc(db, "users", currentUser);
-
+      const db = getFirestore();
+      const currentUserEmail = auth.currentUser.email;
+      const userDocRef = doc(db, "users", currentUserEmail);
       const userDocSnap = await getDoc(userDocRef);
-
       if (!userDocSnap.exists()) {
-        return;
+        return [];
       }
+      const exerciseColRef = collection(userDocRef, "exercise");
+      const exerciseQuerySnapshot = await getDocs(exerciseColRef);
 
-      const friendEmails = userDocSnap.data().friend;
-      const friendPromises = friendEmails.map((friendEmail) => {
-        const friendDocRef = doc(db, "users", friendEmail);
-        return getDoc(friendDocRef);
+      const today = Timestamp.fromDate(new Date());
+      const sevenDaysAgoTimestamp = Timestamp.fromMillis(
+        today.toMillis() - 6 * 24 * 60 * 60 * 1000
+      );
+      const formattedSevenDaysAgo = `${
+        sevenDaysAgoTimestamp.toDate().toISOString().split("T")[0]
+      }`;
+
+      const exerciseData = exerciseQuerySnapshot.docs
+        .map((doc) => {
+          const exercise = doc.data();
+          const date = doc.id;
+          return { exercise, date };
+        })
+        .filter((data) => {
+          const { date } = data;
+          return date >= formattedSevenDaysAgo;
+        });
+
+      let weightSum = 0;
+      let timeSum = 0;
+
+      const result = exerciseData.filter((data) => {
+        exerciseResult = data.exercise;
+        Object.keys(exerciseResult).forEach((key) => {
+          const items = exerciseResult[key];
+          if (key <= 7) {
+            // 근육 운동
+            items.forEach((item) => {
+              if (item.done && item.kg) {
+                weightSum += parseFloat(item.kg) * parseFloat(item.count);
+              }
+            });
+          } else if (key == 8) {
+            // 조깅
+            items.forEach((item) => {
+              if (item.done && item.time) {
+                timeSum += 13 * parseFloat(item.time);
+              }
+            });
+          } else if (key == 9) {
+            // 유산소 운동
+            items.forEach((item) => {
+              if (item.done && item.time) {
+                timeSum += 9 * parseFloat(item.time);
+              }
+            });
+          } else if (key == 10) {
+            // 유산소 운동
+            items.forEach((item) => {
+              if (item.done && item.time) {
+                timeSum += 4 * parseFloat(item.time);
+              }
+            });
+          }
+        });
       });
 
-      const friendDocSnaps = await Promise.all(friendPromises);
-
-      const friendData = friendDocSnaps.map((friendDocSnap) => ({
-        nickname: friendDocSnap.data().nickname,
-        volume: friendDocSnap.data().volume, // This assumes the friends have a 'volume' field in their data
-        calories: friendDocSnap.data().calories, // This assumes the friends have a 'calories' field in their data
-      }));
-
-      const volumeRanking = [...friendData].sort((a, b) => b.volume - a.volume);
-      const calorieRanking = [...friendData].sort(
-        (a, b) => b.calories - a.calories
+      setTotalWeight(weightSum);
+      setTotalTime(timeSum);
+      const userRankingRef = doc(db, "users", currentUserEmail);
+      await setDoc(
+        userRankingRef,
+        { totalTime: timeSum, totalWeight: weightSum },
+        { merge: true }
       );
-
-      setVolumeRanking(volumeRanking);
-      setCalorieRanking(calorieRanking);
-
-      const friendCount = userDocSnap.data().friend?.length || 0;
-      const requestCount = userDocSnap.data().requests?.length || 0;
-
-      setFriendCount(friendCount);
-      setRequestCount(requestCount);
     };
 
     fetchRankings();
   }, []);
 
-  const selectRanking = (rankingType) => {
-    setSelectedRanking(rankingType);
-  };
-
-  const renderRanking = ({ item, index }) => (
-    <View style={styles.item}>
-      <Text style={styles.name}>{item.nickname}</Text>
+  const renderRankingItem = ({ item, index }) => (
+    <View style={styles.rankingItem}>
       <Text style={styles.rank}>{index + 1}</Text>
-      <Text style={styles[selectedRanking]}>{item[selectedRanking]}</Text>
-    </View>
-  );
-
-  const Header = () => (
-    <View style={styles.headerContainer}>
-      <View style={styles.header}>
-        <Text style={styles.title}>운동 랭킹</Text>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={
-            selectedRanking === "volume" ? styles.buttonSelected : styles.button
-          }
-          onPress={() => selectRanking("volume")}
-        >
-          <Text style={styles.buttonText}>총 볼륨순 랭킹</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={
-            selectedRanking === "calories"
-              ? styles.buttonSelected
-              : styles.button
-          }
-          onPress={() => selectRanking("calories")}
-        >
-          <Text style={styles.buttonText}>총 칼로리 소모 랭킹</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.nickname}>{item.nickname}</Text>
+      <Text style={styles.value}>{item.value}</Text>
     </View>
   );
 
   return (
-    <FlatList
-      ListHeaderComponent={Header}
-      style={styles.container}
-      data={selectedRanking === "volume" ? volumeRanking : calorieRanking}
-      renderItem={renderRanking}
-      keyExtractor={(item, index) => index.toString()}
-    />
+    <View style={styles.container}>
+      <Text style={styles.header}>Ranking</Text>
+      <View style={styles.rankingContainer}>
+        <Text style={styles.rankingHeader}>Overall Ranking</Text>
+        <FlatList
+          data={rankingData}
+          renderItem={renderRankingItem}
+          keyExtractor={(item, index) => index.toString()}
+        />
+      </View>
+      <View style={styles.summaryContainer}>
+        <Text style={styles.summaryText}>
+          Total Weight: {totalWeight.toFixed(2)} kg
+        </Text>
+        <Text style={styles.summaryText}>
+          Total Kcal: {totalTime.toFixed(2)} Kcal
+        </Text>
+      </View>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
     backgroundColor: "#f2f2f2",
   },
-  headerContainer: {
-    backgroundColor: "white",
-    borderRadius: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
   header: {
-    backgroundColor: "#fc493e",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    paddingTop: 80,
-  },
-  title: {
-    textAlign: "center",
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
-    color: "white",
   },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#fff",
-    marginTop: 10,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+  rankingContainer: {
+    marginBottom: 20,
   },
-  button: {
-    padding: 15,
-    borderRadius: 10,
-    backgroundColor: "#D3D3D3",
-  },
-  buttonSelected: {
-    padding: 15,
-    borderRadius: 10,
-    backgroundColor: "#fc493e",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 18,
-  },
-  listContainer: {
-    marginTop: 30,
-  },
-  item: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 8,
-    padding: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  name: {
+  rankingHeader: {
     fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  rankingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
   },
   rank: {
-    fontSize: 20,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "bold",
   },
-  volume: {
-    fontSize: 20,
+  nickname: {
+    flex: 3,
+    fontSize: 16,
   },
-  calories: {
-    fontSize: 20,
+  value: {
+    flex: 2,
+    fontSize: 16,
+  },
+  summaryContainer: {
+    marginTop: 10,
+  },
+  summaryText: {
+    fontSize: 16,
   },
 });
+
+export default RankingScreen;

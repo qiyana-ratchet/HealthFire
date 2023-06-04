@@ -70,8 +70,8 @@ export default function LoginScreen({ navigation }) {
     // 이메일과 비밀번호를 입력받아 로그인하거나 회원가입할 수 있는 화면
     <View style={styles.container}>
       <Image
-        source={require("../assets/logowhite.png")}
-        style={{ width: 250, height: 100, top: -50, marginTop: 120 }}
+        source={require("../assets/Logo.png")}
+        style={{ width: 250, height: 55, top: -50, marginTop: 120 }}
       />
       <TextInput
         style={styles.input}
@@ -90,7 +90,11 @@ export default function LoginScreen({ navigation }) {
       <TouchableOpacity style={styles.buttonStyle} onPress={handleLogin}>
         <Text style={styles.buttonText}>로그인</Text>
       </TouchableOpacity>
-      <Text style={styles.textRegister}>회원이 아니신가요?</Text>
+      <View style={styles.registerContainer}>
+        <View style={styles.lineLeft}></View>
+        <Text style={styles.textRegister}>회원이 아니신가요?</Text>
+        <View style={styles.lineRight}></View>
+      </View>
       <TouchableOpacity
         style={styles.registerButtonStyle}
         onPress={handleSignUp}
@@ -106,7 +110,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#252525",
+    backgroundColor: "#f5f5f5",
   },
   input: {
     width: "80%",
@@ -116,13 +120,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 20,
     marginBottom: 10,
-    backgroundColor: "#FFFCF2",
+    backgroundColor: "#fff",
   },
   buttonStyle: {
     marginTop: 10,
     width: "80%",
     height: 55,
-    borderWidth: 1,
     borderRadius: 30,
     padding: 10,
     marginBottom: 10,
@@ -145,8 +148,25 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: 700,
   },
-  textRegister: {
+  registerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 100,
-    color: "#fff",
+  },
+  lineLeft: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#d7d7d7",
+    marginLeft: 60,
+  },
+  lineRight: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#d7d7d7",
+    marginRight: 60,
+  },
+  textRegister: {
+    color: "#747474",
+    marginHorizontal: 10,
   },
 });

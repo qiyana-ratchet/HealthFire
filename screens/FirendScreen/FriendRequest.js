@@ -44,10 +44,18 @@ const AddFriendScreen = ({ navigation }) => {
     const currentUser = auth.currentUser.email;
     const userRef = doc(db, "users", currentUser);
 
-    // Move the request to friends
+    // User who sent the request
+    const requestUserRef = doc(db, "users", requestId);
+
+    // Move the request to friends for the current user
     await updateDoc(userRef, {
       friend: arrayUnion(requestId),
       requests: arrayRemove(requestId),
+    });
+
+    // Add the current user to the friend list of the user who sent the request
+    await updateDoc(requestUserRef, {
+      friend: arrayUnion(currentUser),
     });
 
     // Remove the request from local state
