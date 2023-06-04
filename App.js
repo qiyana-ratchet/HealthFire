@@ -55,12 +55,8 @@ function MainTabs() {
         component={FriendScreen}
         options={{headerShown: false}}
       />
-      <Tab.Screen
-        name="랭킹"
-        component={RankingScreen}
-        options={{headerShown: false}}
-      />
-      <Tab.Screen name="운동 기록" component={WorkoutScreen}/>
+      <Tab.Screen name="랭킹" component={RankingScreen} />
+      <Tab.Screen name="운동 기록" component={WorkoutScreen} />
     </Tab.Navigator>
   );
 }
@@ -90,6 +86,11 @@ export default function App() {
           name="WorkoutDetail2"
           component={WorkoutDetailScreen2}
           options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="SignUp"
+          component={SignUpScreen}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="AddFriend"

@@ -21,7 +21,7 @@ import {
 } from "firebase/firestore";
 import { app, auth } from "../../FirebaseConfig";
 
-const AddFriendScreen = ({ navigation }) => {
+const FriendRequest = ({ navigation }) => {
   const db = getFirestore();
   const [requests, setRequests] = useState([]);
 
@@ -44,10 +44,18 @@ const AddFriendScreen = ({ navigation }) => {
     const currentUser = auth.currentUser.email;
     const userRef = doc(db, "users", currentUser);
 
-    // Move the request to friends
+    // User who sent the request
+    const requestUserRef = doc(db, "users", requestId);
+
+    // Move the request to friends for the current user
     await updateDoc(userRef, {
       friend: arrayUnion(requestId),
       requests: arrayRemove(requestId),
+    });
+
+    // Add the current user to the friend list of the user who sent the request
+    await updateDoc(requestUserRef, {
+      friend: arrayUnion(currentUser),
     });
 
     // Remove the request from local state
@@ -192,4 +200,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddFriendScreen;
+export default FriendRequest;

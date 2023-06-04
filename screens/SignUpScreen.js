@@ -5,8 +5,8 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  TextInput,
   ScrollView,
+  TextInput,
 } from "react-native";
 
 import {
@@ -36,6 +36,10 @@ const SignUpScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
+  const [age, setAge] = useState("");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
+
   const db = getFirestore();
 
   const handleSubmit = async () => {
@@ -73,6 +77,8 @@ const SignUpScreen = ({ navigation }) => {
         name,
         nickname,
         uid: user.uid,
+        totalTime: 0,
+        totalWeight: 0,
         friend: [],
         marked: [],
         requests: [],
@@ -137,10 +143,7 @@ const SignUpScreen = ({ navigation }) => {
   }
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image
-        source={require("../assets/SignUpTitle.png")}
-        style={styles.logo}
-      />
+      <Image source={require("../assets/Logo.png")} style={styles.logo} />
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -188,13 +191,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#252525",
+    backgroundColor: "#f5f5f5",
     padding: 20,
   },
   logo: {
     width: 240,
     height: 200,
-    marginBottom: 10,
     resizeMode: "contain",
   },
   title: {
@@ -214,7 +216,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 8,
     backgroundColor: "#FFF",
-    fontSize: 18,
+    fontSize: 14,
     width: "100%",
   },
   button: {

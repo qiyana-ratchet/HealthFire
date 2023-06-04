@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Container, ScrollView } from 'react-native';
-import { Calendar, LocaleConfig } from 'react-native-calendars';
-import { firestore, auth } from '../FirebaseConfig'; //이파일에 쓰이는 export된 변수 firestore->우리의 firestore, auth
-import { collection, doc, getDoc, setDoc, getCollection, getDocs, updateDoc } from 'firebase/firestore';
 
-// const exercises = [
-//   {id: 1, name: '스쿼트'},
-//   {id: 2, name: '데드리프트'},
-//   {id: 3, name: '런지'},
-//   {id: 4, name: '레그익스텐션'},
-//   {id: 5, name: '벤치프레스'},
-//   {id: 6, name: '덤벨플라이'},
-//   {id: 7, name: '딥스'},
-//   {id: 8, name: '조깅'},
-//   {id: 9, name: '사이클'},
-//   {id: 10, name: '플랭크'},
-// ];
-
-
-
-
-
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+  Container,
+  ScrollView,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
+import { firestore, auth } from "../FirebaseConfig"; //이파일에 쓰이는 export된 변수 firestore->우리의 firestore, auth
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  getCollection,
+  getDocs,
+} from "firebase/firestore";
 
 
 export default function WorkoutScreen({ navigation }) {
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState("");
   const [markedDates, setMarkedDates] = useState({});
   const [exerciseData, setExerciseData] = useState(null);
   const [totalKg, setTotalKg] = useState(0);
@@ -33,46 +31,45 @@ export default function WorkoutScreen({ navigation }) {
   const [perc, setPerc] = useState(0);
 
   const user = auth.currentUser;
-  const email = user ? user.email : '';
+  const email = user ? user.email : "";
 
-  const userCollection = collection(firestore, 'users');
+  const userCollection = collection(firestore, "users");
   const userDoc = doc(userCollection, email);
 
-  const [buttonColor, setButtonColor] = useState('#D9D9D9');
+  const [buttonColor, setButtonColor] = useState("#D9D9D9");
+  const [done, setDone] = useState(false);
 
   //달력에 기록된 날짜 표시
-  const fetchMarkedDates = async () => { // docs를 불러와서 점을 다시 찍어
+  const fetchMarkedDates = async () => {
+    // docs를 불러와서 점을 다시 찍어
     try {
-      const exerciseCollection = await getDocs(collection(userDoc, 'exercise')); //이 작업이 완료되면
+      const exerciseCollection = await getDocs(collection(userDoc, "exercise")); //이 작업이 완료되면
       const dates = {};
 
       exerciseCollection.forEach((doc) => {
         // console.log(doc.id);
-        dates[doc.id] = { marked: true, dotColor: 'red' };
+        dates[doc.id] = { marked: true, dotColor: "red" };
       });
 
       setMarkedDates(dates);
     } catch (error) {
       console.error("error", error);
     }
-
   };
 
   //기록된 날짜 즉각 업데이트
-  useEffect(() => { //화면이 바뀌
+  useEffect(() => {
+    //화면이 바뀌
     // const unsubscribe = navigation.addListener('focus', fetchMarkedDates); //네비게이션 객체에 focus(화면 포커스) 이벤트리스너 추가
     // return unsubscribe; //이전에 등록한 이벤트 리스너 해제??
 
-    navigation.addListener('focus', fetchMarkedDates); //네비게이션 객체에 focus(화면 포커스) 이벤트리스너 추가
+    navigation.addListener("focus", fetchMarkedDates); //네비게이션 객체에 focus(화면 포커스) 이벤트리스너 추가
     //이전에 등록한 이벤트 리스너 해제??
-
-
-
   }, [navigation]); //화면이 바뀌는것 기준.
 
-
-  //날짜 선택됐을 때 
+  //날짜 선택됐을 때
   const handleDayPress = async (date) => {
+
 
     setMarkedDates((prevMarkedDates) => ({
       ...prevMarkedDates,
@@ -84,21 +81,16 @@ export default function WorkoutScreen({ navigation }) {
 
 
     const dateRef = doc(collection(userDoc, 'exercise'), date.dateString); //전에 눌린거
-    const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.₩
-
-    if (dateDoc.exists()) { //이 레퍼런스가 존재하면
+    const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.
+    if (dateDoc.exists()) {
+      //이 레퍼런스가 존재하면
 
       setExerciseData(dateDoc.data());
-      // setKeys(Object.keys(dateDoc.data())); //렌더링에 쓰지마
-
+      // setKeys(Object.keys(dateDoc.data())); //렌더링에 쓰지마.
+      setSelectedDate(date.dateString);
     } else {
       setExerciseData(null); //usereffect로가
     }
-
-    // countTotalVol();
-
-
-
   };
 
   // const countTotalVol = () => {
@@ -173,31 +165,103 @@ export default function WorkoutScreen({ navigation }) {
 
 
   function getKeyText(key) {
-    if (key === '1') {
-      return '스쿼트';
-    } else if (key === '2') {
-      return '데드리프트';
-    } else if (key === '3') {
-      return '런지';
-    } else if (key === '4') {
-      return '레그익스텐션';
-    } else if (key === '5') {
-      return '벤치프레스';
-    } else if (key === '6') {
-      return '덤벨플라이';
-    } else if (key === '7') {
-      return '딥스';
-    } else if (key === '8') {
-      return '조깅';
-    } else if (key === '9') {
-      return '사이클';
-    } else if (key === '10') {
-      return '플랭크';
+    if (key === "1") {
+      return "스쿼트";
+    } else if (key === "2") {
+      return "데드리프트";
+    } else if (key === "3") {
+      return "런지";
+    } else if (key === "4") {
+      return "레그익스텐션";
+    } else if (key === "5") {
+      return "벤치프레스";
+    } else if (key === "6") {
+      return "덤벨플라이";
+    } else if (key === "7") {
+      return "딥스";
+    } else if (key === "8") {
+      return "조깅";
+    } else if (key === "9") {
+      return "사이클";
+    } else if (key === "10") {
+      return "플랭크";
     } else {
-      return '기타';
-    };
+      return "기타";
+    }
   }
 
+  //이 값이 바뀌면 렌더링을 다시해?
+  // useEffect(() => {
+
+  //   async function dd(){
+  //     const dateRef = doc(collection(userDoc, 'exercise'), selectedDate); //전에 눌린거
+  //     const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.
+
+  //     if(dateDoc.exists()){
+  //       setExerciseData(dateDoc.data());
+  //     }
+
+  //   }
+
+  //   dd();
+
+  //   console.log("set 직후 exerciseData:", exerciseData);
+  //   console.log("set 직후 keys:", keys);
+
+  // },[selectedDate]);
+
+  // useEffect(()=>{
+
+  //   if(exerciseData){
+  //     setExerciseData(exerciseData);
+  //   }
+
+  //   console.log("set 후 exerciseData:", exerciseData);
+  //   console.log("set 직후 keys:", keys);
+
+  // },[exerciseData]);
+
+  // useEffect(()=> {
+  //   if(keys) {
+
+  //   }
+  // }, [keys]);
+
+  //리렌더링 되면서 그전의 값이 왜 계속되냐
+  //선택날짜 동기화
+  // useEffect(() => {
+  //   console.log("-----------------------------------------");
+  //   console.log("운동 날짜 : ", selectedDate);
+  //   console.log("운동 데이터 : " , exerciseData);
+  //   console.log("운동 종류 : ",keys);
+  //   console.log("B");
+
+  //   if (selectedDate && exerciseData && keys) {
+  //     try{
+  //       console.log("C");
+  //       console.log("운동 날짜 : ", selectedDate);
+  //       console.log("운동 데이터 : " , exerciseData); //안바뀜
+  //       console.log("운동 종류 : ",keys); //안바뀜
+  //     }catch{
+  //       console.log("error", error);
+  //     }
+  //   }
+
+  //   console.log("\n\n");
+
+  // },[selectedDate, keys, exerciseData]);
+
+  //useEffect : 시작될때 반드시 한번 실행된다.
+  //운동날짜에 ''이게 null인가? false래.
+  //set할때마다 userEffect로 바로 가는게 맞는듯.
+
+  // useEffect(() => {
+  //   console.log("exerciseData",exerciseData); //바뀐 후
+  // }, [exerciseData]);
+
+  // useEffect(() => {
+
+  // }, []);
 
   const handleExerciseButtonPress = () => {
     navigation.navigate('WorkoutDetail', { selectedDate: selectedDate }); // 메인 화면으로 이동
@@ -221,14 +285,13 @@ export default function WorkoutScreen({ navigation }) {
           // console.log(exerciseItem.done);
           exerciseItem.done = !exerciseItem.done;
 
+    item.done = !item.done;
         }
       });
     });
 
     await updateDoc(dateRef, updatedExerciseData);
-
   };
-
 
   return (
     <View style={styles.container}>
@@ -262,7 +325,6 @@ export default function WorkoutScreen({ navigation }) {
       </View>
 
 
-
       {/* <Text>Selected Date: {selectedDate} </Text> */}
 
       {/* <View>
@@ -284,8 +346,6 @@ export default function WorkoutScreen({ navigation }) {
         <Text> 키들이 없습니다 </Text>
       )}
       </View> */}
-
-
 
       {/* <Text>exercise Data: {exerciseData} </Text> */}
       {/* <Text>Keys: {keys} </Text> */}
@@ -315,7 +375,6 @@ export default function WorkoutScreen({ navigation }) {
 
 
 
-
       <ScrollView contentContainerStyle={styles.excontainer}>
         {exerciseData ? (
           Object.keys(exerciseData).map((key) => (
@@ -326,49 +385,86 @@ export default function WorkoutScreen({ navigation }) {
               <View>
                 {exerciseData[key].map((item, index) => (
                   <View style={styles.setContainer} key={index}>
-
                     <View style={styles.setContainer}>
-                      <Text style={{ borderWidth: 1, borderColor: '#FC493E', fontSize: 20, color: '#FC493E' }}> {index + 1} </Text>
-                      <Text style={{ color: '#FC493E' }}> 세트 </Text>
+                      <Text
+                        style={{
+                          borderWidth: 1,
+                          borderColor: "#FC493E",
+                          fontSize: 20,
+                          color: "#FC493E",
+                        }}
+                      >
+                        {" "}
+                        {index + 1}{" "}
+                      </Text>
+                      <Text style={{ color: "#FC493E" }}> 세트 </Text>
                     </View>
 
                     {item.kg && item.count ? (
-                      <View style={styles.setContainer} >
-                        <Text style={{ backgroundColor: '#D9D9D9', fontSize: 20 }}> {item.kg} </Text>
-                        <Text style={{ color: '#797979' }}> kg </Text>
+                      <View style={styles.setContainer}>
+                        <Text
+                          style={{ backgroundColor: "#D9D9D9", fontSize: 20 }}
+                        >
+                          {" "}
+                          {item.kg}{" "}
+                        </Text>
+                        <Text style={{ color: "#797979" }}> kg </Text>
 
-                        <Text style={{ backgroundColor: '#D9D9D9', fontSize: 20 }}> {item.count} </Text>
-                        <Text style={{ color: '#797979' }}> 회 </Text>
+                        <Text
+                          style={{ backgroundColor: "#D9D9D9", fontSize: 20 }}
+                        >
+                          {" "}
+                          {item.count}{" "}
+                        </Text>
+                        <Text style={{ color: "#797979" }}> 회 </Text>
                       </View>
                     ) : (
-                      <View style={styles.setContainer} >
-                        <Text style={{ backgroundColor: '#D9D9D9', fontSize: 20 }}> {item.time} </Text>
-                        <Text style={{ color: '#797979' }}> 분 </Text>
+                      <View style={styles.setContainer}>
+                        <Text
+                          style={{ backgroundColor: "#D9D9D9", fontSize: 20 }}
+                        >
+                          {" "}
+                          {item.time}{" "}
+                        </Text>
+                        <Text style={{ color: "#797979" }}> 분 </Text>
                       </View>
                     )}
 
-
-
                     {item.done === false ? (
-                      <View style={{ flex: 1, flexDirection: 'row-reverse', height: 25 }}>
-                        <TouchableOpacity style={styles.doneFalseButton} onPress={() => handleDoneButtonPress(item)}>
-                          <Text style={styles.donebuttonText}> ☑️ </Text>
-                        </TouchableOpacity>
-
-                        {/* <Text>Done: {item.done.toString()}</Text> */}
-                      </View>
-                    ) : (
-                      <View style={{ flex: 1, flexDirection: 'row-reverse', height: 25 }}>
-                        <TouchableOpacity style={styles.doneTrueButton} onPress={() => handleDoneButtonPress(item)}>
+                      <View
+                        style={{
+                          flex: 1,
+                          flexDirection: "row-reverse",
+                          height: 25,
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={styles.doneFalseButton}
+                          onPress={() => handleDoneButtonPress(item)}
+                        >
                           <Text style={styles.donebuttonText}> ✅ </Text>
                         </TouchableOpacity>
 
                         {/* <Text>Done: {item.done.toString()}</Text> */}
                       </View>
+                    ) : (
+                      <View
+                        style={{
+                          flex: 1,
+                          flexDirection: "row-reverse",
+                          height: 25,
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={styles.doneTrueButton}
+                          onPress={() => handleDoneButtonPress(item)}
+                        >
+                          <Text style={styles.donebuttonText}> ☑️ </Text>
+                        </TouchableOpacity>
+
+                        {/* <Text>Done: {item.done.toString()}</Text> */}
+                      </View>
                     )}
-
-
-
                   </View>
                 ))}
               </View>
@@ -376,26 +472,25 @@ export default function WorkoutScreen({ navigation }) {
           ))
         ) : (
           <View style={styles.container}>
-            {/* <Text>기록이 없습니다.</Text> */}
-            <TouchableOpacity style={styles.exerciseButton} onPress={handleExerciseButtonPress} >
+            <Text>기록이 없습니다.</Text>
+            <TouchableOpacity
+              style={styles.exerciseButton}
+              onPress={handleExerciseButtonPress}
+            >
               <Text style={styles.buttonText}>운동 기록하기!!!</Text>
             </TouchableOpacity>
           </View>
-
         )}
       </ScrollView>
-
-
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    // flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   calendar: {
     width: 360,
@@ -435,29 +530,30 @@ const styles = StyleSheet.create({
   exerciseButton: {
     width: 360,
     height: 50,
-    marginTop: 0,
-    backgroundColor: '#FC493E',
+    marginTop: 20,
+    backgroundColor: "#FC493E",
     borderRadius: 10,
     // padding: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   exerciseNameContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: '#FC493E',
+    borderBottomColor: "#FC493E",
     padding: 10,
     marginBottom: 10,
   },
   exerciseName: {
     fontSize: 16,
-    color: '#FC493E',
-    fontWeight: 'bold',
+    color: "#FC493E",
+    fontWeight: "bold",
   },
   excontainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: 370,
-    marginBottom: 60,
-    // backgroundColor: '#F7F7F7',
+    paddingBottom: 20,
+    borderColor: "#FC493E",
+    // margin: 10,
   },
   exerciseContainer: {
     borderRadius: 10,
@@ -470,34 +566,31 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   setContainer: {
-    backgroundColor: 'white',
-    flexDirection: 'row',
+    backgroundColor: "white",
+    flexDirection: "row",
     marginLeft: 5,
     marginRight: 5,
     marginBottom: 5,
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     lineHeight: 50,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   doneFalseButton: {
     // color: '#D9D9D9',
     // backgroundColor: '#D9D9D9',
     height: 25,
-    marginRight: 5
+    marginRight: 5,
   },
   doneTrueButton: {
     // color: '#D9',
     // backgroundColor: '#FC493E',
     height: 25,
-    marginRight: 5
+    marginRight: 5,
   },
   donebuttonText: {
     fontSize: 20,
-  }
+  },
 });
-
-
-
