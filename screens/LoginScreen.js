@@ -15,7 +15,6 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { color } from "react-native-elements/dist/helpers";
 
 export default function LoginScreen({ navigation }) {
   // 로그인 화면
@@ -46,23 +45,6 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleSignUp = () => {
-    // 회원가입 처리
-    // const auth = getAuth();
-    // createUserWithEmailAndPassword(auth, email, password)  // Firebase 회원가입 함수
-    //   .then((userCredential) => {  // 회원가입 성공 시
-    //     console.log("Sign-up success");
-    //     // Signed in
-    //     const user = userCredential.user;  // 회원가입한 사용자 정보
-    //     // ...
-    //   })
-    //   .catch((error) => {  // 회원가입 실패 시
-    //     console.log("Sign-up Error");
-    //     const errorCode = error.code;  // 에러 코드
-    //     const errorMessage = error.message;  // 에러 메시지
-    //     console.log(errorCode)
-    //     console.log(errorMessage)
-    //     // ..
-    //   });
     navigation.navigate("SignUp"); // 회원가입 화면으로 이동
   };
 
@@ -70,8 +52,8 @@ export default function LoginScreen({ navigation }) {
     // 이메일과 비밀번호를 입력받아 로그인하거나 회원가입할 수 있는 화면
     <View style={styles.container}>
       <Image
-        source={require("../assets/logowhite.png")}
-        style={{ width: 250, height: 100, top: -50, marginTop: 120 }}
+        source={require("../assets/Logo.png")}
+        style={{ width: 300, top: -50, marginTop: 100 }}
       />
       <TextInput
         style={styles.input}
@@ -106,7 +88,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#252525",
+    backgroundColor: "#f5f5f5",
   },
   input: {
     width: "80%",
