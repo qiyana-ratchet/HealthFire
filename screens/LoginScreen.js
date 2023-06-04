@@ -7,7 +7,7 @@ import {
   Button,
   KeyboardAvoidingView,
   Image,
-  TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
 import { app, auth } from "../FirebaseConfig";
 import {
@@ -69,9 +69,9 @@ export default function LoginScreen({ navigation }) {
   return (
     // 이메일과 비밀번호를 입력받아 로그인하거나 회원가입할 수 있는 화면
     <View style={styles.container}>
-      <Image 
-      source={require('../assets/logowhite.png')} 
-      style={{ width: 250, height: 100, top: -50}} 
+      <Image
+        source={require("../assets/logowhite.png")}
+        style={{ width: 250, height: 100, top: -50, marginTop: 120 }}
       />
       <TextInput
         style={styles.input}
@@ -87,18 +87,16 @@ export default function LoginScreen({ navigation }) {
         onChangeText={(text) => setPassword(text)}
       />
 
-      <Button 
-        style = {styles.button}
-        title = "로그인"
-        onPress={handleLogin}
-        
-      />
-      <Button 
-        title = "회원가입"
+      <TouchableOpacity style={styles.buttonStyle} onPress={handleLogin}>
+        <Text style={styles.buttonText}>로그인</Text>
+      </TouchableOpacity>
+      <Text style={styles.textRegister}>회원이 아니신가요?</Text>
+      <TouchableOpacity
+        style={styles.registerButtonStyle}
         onPress={handleSignUp}
-      />
-
-
+      >
+        <Text style={styles.buttonText}>회원가입</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -108,28 +106,47 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#252525"
+    backgroundColor: "#252525",
   },
   input: {
     width: "80%",
+    height: 55,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 10,
+    paddingHorizontal: 20,
     marginBottom: 10,
-    backgroundColor: "#FFFCF2"
+    backgroundColor: "#FFFCF2",
   },
-  button: {
+  buttonStyle: {
+    marginTop: 10,
     width: "80%",
-    height: 40,
+    height: 55,
     borderWidth: 1,
     borderRadius: 30,
     padding: 10,
     marginBottom: 10,
     backgroundColor: "#FC493E",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  // buttonText:{
-  //   color: "#FFFEFE",
-  // }
+  registerButtonStyle: {
+    marginTop: 20,
+    backgroundColor: "black",
+    width: "80%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    height: 55,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: "#FFFEFE",
+    textAlign: "center",
+    fontWeight: 700,
+  },
+  textRegister: {
+    marginTop: 100,
+    color: "#fff",
+  },
 });
-

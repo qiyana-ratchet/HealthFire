@@ -13,17 +13,54 @@ import WorkoutDetailScreen from "./screens/WorkoutDetailScreen";
 import WorkoutDetailScreen2 from "./screens/WorkoutDetailScreen2";
 import AddFriendScreen from "./screens/FirendScreen/AddFriendScreen";
 import RequestFriendScreen from "./screens/FirendScreen/FriendRequest";
+import { Ionicons } from "@expo/vector-icons";
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function MainTabs() {
   // 메인 화면의 탭 네비게이션
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Friends" component={FriendScreen} />
-      <Tab.Screen name="Ranking" component={RankingScreen} />
-      <Tab.Screen name="Workout" component={WorkoutScreen} />
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          // You can add more cases as you need
+          if (route.name === "홈") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "운동 친구") {
+            iconName = focused ? "people" : "people-outline";
+          } else if (route.name === "랭킹") {
+            iconName = focused ? "podium" : "podium-outline";
+          } else if (route.name === "운동 기록") {
+            iconName = focused ? "fitness" : "fitness-outline";
+          }
+
+          // You can return any component that you like here!
+          color = focused ? "tomato" : "gray";
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "tomato",
+        tabBarInactiveTintColor: "gray",
+      })}
+    >
+      <Tab.Screen
+        name="홈"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="운동 친구"
+        component={FriendScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="랭킹"
+        component={RankingScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen name="운동 기록" component={WorkoutScreen} />
     </Tab.Navigator>
   );
 }
@@ -33,7 +70,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Main"
           component={MainTabs}
