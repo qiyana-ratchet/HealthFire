@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Container, Scroll
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { firestore, auth } from '../FirebaseConfig'; //이파일에 쓰이는 export된 변수 firestore->우리의 firestore, auth
 import { collection, doc, getDoc, setDoc, getCollection, getDocs, updateDoc } from 'firebase/firestore';
+import { color } from 'react-native-elements/dist/helpers';
 
 // const exercises = [
 //   {id: 1, name: '스쿼트'},
@@ -77,7 +78,7 @@ export default function WorkoutScreen({ navigation }) {
     setMarkedDates((prevMarkedDates) => ({
       ...prevMarkedDates,
       [selectedDate]: { ...prevMarkedDates[selectedDate], selected: false },
-      [date.dateString]: { ...prevMarkedDates[date.dateString], selected: true, selectedColor: '#00BD00' },
+      [date.dateString]: { ...prevMarkedDates[date.dateString], selected: true, selectedColor: '#D9D9D9' },
     }));
 
     setSelectedDate(date.dateString);
@@ -123,9 +124,9 @@ export default function WorkoutScreen({ navigation }) {
     if (exerciseData) {
       Object.keys(exerciseData).forEach((key) => { //key: 1,3,5..
         const items = exerciseData[key];
-        totalSet += 1;
         if (key <= 7) { //근육 
           items.forEach((item) => {
+            totalSet += 1;
             if (item.done && item.kg) {
               totalKg += parseFloat(item.kg) * parseFloat(item.count);
               acheiveSet += 1;
@@ -133,6 +134,7 @@ export default function WorkoutScreen({ navigation }) {
           });
         } else if (key == 8) { //유산소 - 조깅
           items.forEach((item) => {
+            totalSet += 1;
             if (item.done && item.time) {
               totalKcal += 13 * parseFloat(item.time);
               acheiveSet += 1;
@@ -140,6 +142,7 @@ export default function WorkoutScreen({ navigation }) {
           });
         } else if (key == 9) { //유산소 
           items.forEach((item) => {
+            totalSet += 1;
             if (item.done && item.time) {
               totalKcal += 9 * parseFloat(item.time);
               acheiveSet += 1;
@@ -147,6 +150,7 @@ export default function WorkoutScreen({ navigation }) {
           });
         } else if (key == 10) { //유산소
           items.forEach((item) => {
+            totalSet += 1;
             if (item.done && item.time) {
               totalKcal += 4 * parseFloat(item.time);
               acheiveSet += 1;
@@ -290,7 +294,7 @@ export default function WorkoutScreen({ navigation }) {
       {/* <Text>exercise Data: {exerciseData} </Text> */}
       {/* <Text>Keys: {keys} </Text> */}
       {/* <Text>markedDates: {markedDates} </Text> */}
-      <View>
+      {/* <View>
         {exerciseData ? (
           <View style={styles.totalcontainer}>
             <View style={styles.total}>
@@ -311,12 +315,37 @@ export default function WorkoutScreen({ navigation }) {
         ): (
           <Text></Text>
         )}
-      </View>
+      </View> */}
 
 
 
 
       <ScrollView contentContainerStyle={styles.excontainer}>
+
+        {exerciseData ? (
+          <View style={styles.totalcontainer}>
+            <View style={styles.total}>
+              <Text style={styles.title}>총볼륨</Text>
+              <Text style={styles.contents}>{totalKg}</Text>
+            </View>
+
+            <View style={styles.total}>
+              <Text style={styles.title}>소모칼로리</Text>
+              <Text style={styles.contents}>{totalKcal}</Text>
+            </View>
+
+            <View style={styles.total}>
+              <Text style={styles.title}>달성률</Text>
+              <Text style={styles.contents}>{perc}%</Text>
+            </View>
+          </View>
+        ) : (
+          <Text></Text>
+
+        )}
+
+
+
         {exerciseData ? (
           Object.keys(exerciseData).map((key) => (
             <View key={key} style={styles.exerciseContainer}>
@@ -419,13 +448,14 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginRight: 20,
     borderRadius: 50,
-    width: 70,
+    width: 80,
     height: 50,
-    marginBottom:5,
+    marginBottom: 10,
   },
   title: {
     padding: 5,
-    textAlign: 'center'
+    textAlign: 'center',
+    // color: '#D9D9D9'
   },
   contents: {
     textAlign: 'center',
@@ -457,7 +487,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 370,
     marginBottom: 60,
-    // backgroundColor: '#F7F7F7',
+    // backgroundColor: '#ffffff',
   },
   exerciseContainer: {
     borderRadius: 10,
