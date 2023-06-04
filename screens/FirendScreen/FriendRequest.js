@@ -21,7 +21,7 @@ import {
 } from "firebase/firestore";
 import { app, auth } from "../../FirebaseConfig";
 
-const AddFriendScreen = ({ navigation }) => {
+const FriendRequest = ({ navigation }) => {
   const db = getFirestore();
   const [requests, setRequests] = useState([]);
 
@@ -200,4 +200,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddFriendScreen;
+export default FriendRequest;

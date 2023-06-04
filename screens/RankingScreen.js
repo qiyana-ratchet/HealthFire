@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Button } from "react-native";
 import {
   doc,
   getDoc,
-  setDoc,
   collection,
   getDocs,
   getFirestore,
-  addDays,
-  startOfDay,
   Timestamp,
 } from "firebase/firestore";
 
@@ -16,8 +13,7 @@ import { app, auth } from "../FirebaseConfig";
 
 const RankingScreen = ({ navigation }) => {
   const [rankingData, setRankingData] = useState([]);
-  const [totalWeight, setTotalWeight] = useState(0);
-  const [totalTime, setTotalTime] = useState(0);
+  const [showTotalWeight, setShowTotalWeight] = useState(true);
 
   useEffect(() => {
     const fetchRankings = async () => {
@@ -28,106 +24,123 @@ const RankingScreen = ({ navigation }) => {
       if (!userDocSnap.exists()) {
         return [];
       }
-      const exerciseColRef = collection(userDocRef, "exercise");
-      const exerciseQuerySnapshot = await getDocs(exerciseColRef);
 
-      const today = Timestamp.fromDate(new Date());
-      const sevenDaysAgoTimestamp = Timestamp.fromMillis(
-        today.toMillis() - 6 * 24 * 60 * 60 * 1000
-      );
-      const formattedSevenDaysAgo = `${
-        sevenDaysAgoTimestamp.toDate().toISOString().split("T")[0]
-      }`;
+      const friends = userDocSnap.data().friend || [];
+      friends.push(currentUserEmail);
+      let ranking = [];
 
-      const exerciseData = exerciseQuerySnapshot.docs
-        .map((doc) => {
+      for (const userEmail of friends) {
+        const userRef = doc(db, "users", userEmail);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          continue;
+        }
+
+        const exerciseColRef = collection(userRef, "exercise");
+        const exerciseQuerySnapshot = await getDocs(exerciseColRef);
+
+        const today = Timestamp.fromDate(new Date());
+        const sevenDaysAgoTimestamp = Timestamp.fromMillis(
+          today.toMillis() - 6 * 24 * 60 * 60 * 1000
+        );
+        const formattedSevenDaysAgo = `${
+          sevenDaysAgoTimestamp.toDate().toISOString().split("T")[0]
+        }`;
+
+        let weightSum = 0;
+        let timeSum = 0;
+
+        exerciseQuerySnapshot.docs.forEach((doc) => {
           const exercise = doc.data();
           const date = doc.id;
-          return { exercise, date };
-        })
-        .filter((data) => {
-          const { date } = data;
-          return date >= formattedSevenDaysAgo;
-        });
-
-      let weightSum = 0;
-      let timeSum = 0;
-
-      const result = exerciseData.filter((data) => {
-        exerciseResult = data.exercise;
-        Object.keys(exerciseResult).forEach((key) => {
-          const items = exerciseResult[key];
-          if (key <= 7) {
-            // 근육 운동
-            items.forEach((item) => {
-              if (item.done && item.kg) {
-                weightSum += parseFloat(item.kg) * parseFloat(item.count);
-              }
-            });
-          } else if (key == 8) {
-            // 조깅
-            items.forEach((item) => {
-              if (item.done && item.time) {
-                timeSum += 13 * parseFloat(item.time);
-              }
-            });
-          } else if (key == 9) {
-            // 유산소 운동
-            items.forEach((item) => {
-              if (item.done && item.time) {
-                timeSum += 9 * parseFloat(item.time);
-              }
-            });
-          } else if (key == 10) {
-            // 유산소 운동
-            items.forEach((item) => {
-              if (item.done && item.time) {
-                timeSum += 4 * parseFloat(item.time);
-              }
-            });
+          if (date < formattedSevenDaysAgo) {
+            return;
           }
-        });
-      });
 
-      setTotalWeight(weightSum);
-      setTotalTime(timeSum);
-      const userRankingRef = doc(db, "users", currentUserEmail);
-      await setDoc(
-        userRankingRef,
-        { totalTime: timeSum, totalWeight: weightSum },
-        { merge: true }
+          Object.keys(exercise).forEach((key) => {
+            const items = exercise[key];
+            if (key <= 7) {
+              items.forEach((item) => {
+                if (item.done && item.kg) {
+                  weightSum += item.kg * item.count;
+                }
+              });
+            } else if (key === "8") {
+              items.forEach((item) => {
+                if (item.done && item.time) {
+                  timeSum += 13 * parseFloat(item.time);
+                }
+              });
+            } else if (key === "9") {
+              items.forEach((item) => {
+                if (item.done && item.time) {
+                  timeSum += 9 * parseFloat(item.time);
+                }
+              });
+            } else if (key === "10") {
+              items.forEach((item) => {
+                if (item.done && item.time) {
+                  timeSum += 4 * parseFloat(item.time);
+                }
+              });
+            }
+          });
+        });
+
+        const userNickname = userSnap.data().nickname;
+        ranking.push({
+          nickname: userNickname,
+          totalWeight: weightSum,
+          totalTime: timeSum,
+        });
+      }
+
+      // Sort ranking by total weight and time
+      ranking.sort(
+        (a, b) => b.totalWeight + b.totalTime - (a.totalWeight + a.totalTime)
       );
+      setRankingData(ranking);
     };
 
     fetchRankings();
-  }, []);
+  }, [navigation]);
 
   const renderRankingItem = ({ item, index }) => (
     <View style={styles.rankingItem}>
       <Text style={styles.rank}>{index + 1}</Text>
       <Text style={styles.nickname}>{item.nickname}</Text>
-      <Text style={styles.value}>{item.value}</Text>
+      <Text style={styles.value}>
+        {showTotalWeight
+          ? `Total Weight: ${item.totalWeight}`
+          : `Total Time: ${item.totalTime}`}
+      </Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Ranking</Text>
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Show Weight Ranking"
+          onPress={() => setShowTotalWeight(true)}
+          disabled={showTotalWeight}
+        />
+        <Button
+          title="Show Time Ranking"
+          onPress={() => setShowTotalWeight(false)}
+          disabled={!showTotalWeight}
+        />
+      </View>
       <View style={styles.rankingContainer}>
-        <Text style={styles.rankingHeader}>Overall Ranking</Text>
+        <Text style={styles.rankingHeader}>
+          {showTotalWeight ? "Weight Ranking" : "Time Ranking"}
+        </Text>
         <FlatList
           data={rankingData}
           renderItem={renderRankingItem}
           keyExtractor={(item, index) => index.toString()}
         />
-      </View>
-      <View style={styles.summaryContainer}>
-        <Text style={styles.summaryText}>
-          Total Weight: {totalWeight.toFixed(2)} kg
-        </Text>
-        <Text style={styles.summaryText}>
-          Total Kcal: {totalTime.toFixed(2)} Kcal
-        </Text>
       </View>
     </View>
   );
@@ -184,6 +197,11 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: 16,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
 });
 

@@ -74,7 +74,7 @@ export default function FriendScreen({ navigation }) {
 
     fetchCounts();
     fetchFriends();
-  }, [friends]);
+  }, []);
 
   const renderFriend = ({ item }) => {
     if (!item) return <View style={styles.emptyBlock}></View>; // empty block when there's no friend
