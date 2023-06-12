@@ -14,6 +14,7 @@ import RequestFriendScreen from "./screens/FirendScreen/FriendRequest";
 import MyPage from "./screens/MyPage.js";
 import { Ionicons } from "@expo/vector-icons";
 
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -29,6 +30,7 @@ function MainTabs() {
           fontWeight: "bold",
         },
         tabBarIcon: ({ focused, color, size }) => {
+
           let iconName;
 
           if (route.name === "운동 기록") {
@@ -43,6 +45,7 @@ function MainTabs() {
 
           color = focused ? "tomato" : "gray";
           return <Ionicons name={iconName} size={27} color={color} />;
+
         },
         tabBarActiveTintColor: "tomato",
         tabBarInactiveTintColor: "gray",
@@ -86,15 +89,16 @@ export default function App() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
         <Stack.Screen
           name="Main"
           component={MainTabs}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
         <Stack.Screen name="운동 선택" component={WorkoutDetailScreen} />
         <Stack.Screen name="운동 시간 기록" component={WorkoutDetailScreen2} />
+
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
@@ -103,12 +107,12 @@ export default function App() {
         <Stack.Screen
           name="AddFriend"
           component={AddFriendScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
         <Stack.Screen
           name="RequestFriend"
           component={RequestFriendScreen}
-          options={{ headerShown: false }}
+          options={{headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>
