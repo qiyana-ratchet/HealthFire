@@ -343,12 +343,11 @@ export default function WorkoutScreen({ navigation }) {
           ))
         ) : (
           <View style={styles.container}>
-            {/* <Text>기록이 없습니다.</Text> */}
             <TouchableOpacity
               style={styles.exerciseButton}
               onPress={handleExerciseButtonPress}
             >
-              <Text style={styles.buttonText}>운동 기록하기!!!</Text>
+              <Text style={styles.buttonText}>운동 기록하기</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -394,7 +393,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   exerciseButton: {
-    width: windowWidth - 40,
+    width: windowWidth - 70,
     height: 50,
     marginTop: 0,
     backgroundColor: "#FC493E",

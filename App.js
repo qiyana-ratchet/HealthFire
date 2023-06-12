@@ -42,7 +42,7 @@ function MainTabs() {
           }
 
           color = focused ? "tomato" : "gray";
-          return <Ionicons name={iconName} size={30} color={color} />;
+          return <Ionicons name={iconName} size={27} color={color} />;
         },
         tabBarActiveTintColor: "tomato",
         tabBarInactiveTintColor: "gray",

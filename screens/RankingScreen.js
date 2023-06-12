@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Button } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Button,
+  TouchableOpacity,
+} from "react-native";
 import {
   doc,
   getDoc,
@@ -129,16 +136,24 @@ const RankingScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.buttonContainer}>
-        <Button
-          title="볼륨 순으로 보기"
+        <TouchableOpacity
+          style={[
+            styles.button,
+            showTotalWeight ? styles.activeButton : styles.inactiveButton,
+          ]}
           onPress={() => setShowTotalWeight(true)}
-          disabled={showTotalWeight}
-        />
-        <Button
-          title="소모칼로리 순으로 보기"
+        >
+          <Text style={styles.buttonText}>볼륨 순으로 보기</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            !showTotalWeight ? styles.activeButton : styles.inactiveButton,
+          ]}
           onPress={() => setShowTotalWeight(false)}
-          disabled={!showTotalWeight}
-        />
+        >
+          <Text style={styles.buttonText}>소모칼로리 순으로 보기</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.rankingContainer}>
         <Text style={styles.rankingHeader}>
@@ -216,6 +231,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 10,
+  },
+  activeButton: {
+    backgroundColor: "#747474",
+  },
+  inactiveButton: {
+    backgroundColor: "#fc493e",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import {
   doc,
@@ -84,86 +84,56 @@ const MyPage = ({ navigation }) => {
         }
       });
 
+      calorieData = calorieData.map((data) => (isNaN(data) ? 0 : data));
+      volumeData = volumeData.map((data) => (isNaN(data) ? 0 : data));
+
       setCalorieData(calorieData);
       setVolumeData(volumeData);
     };
 
     fetchExerciseData();
-  }, [navigation]); // Add an empty dependency array here
+  }, [navigation]);
+
+  const renderGraph = (data, title) => {
+    return (
+      <View style={styles.graphContainer}>
+        <Text style={styles.graphTitle}>총 {title}</Text>
+        <LineChart
+          data={{
+            labels: [
+              "Day 1",
+              "Day 2",
+              "Day 3",
+              "Day 4",
+              "Day 5",
+              "Day 6",
+              "Day 7",
+            ],
+            datasets: [{ data }],
+          }}
+          width={300}
+          height={200}
+          chartConfig={{
+            backgroundColor: "#F5F5F5",
+            backgroundGradientFrom: "#F5F5F5",
+            backgroundGradientTo: "#F5F5F5",
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(61, 61, 61, ${opacity})`,
+            style: {
+              borderRadius: 16,
+            },
+          }}
+          bezier
+          style={styles.graph}
+        />
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.graphContainer}>
-        <Text style={styles.graphTitle}>총 칼로리 소모량</Text>
-        <LineChart
-          data={{
-            labels: [
-              "Day 1",
-              "Day 2",
-              "Day 3",
-              "Day 4",
-              "Day 5",
-              "Day 6",
-              "Day 7",
-            ],
-            datasets: [
-              {
-                data: calorieData,
-              },
-            ],
-          }}
-          width={300}
-          height={200}
-          chartConfig={{
-            backgroundColor: "#F5F5F5",
-            backgroundGradientFrom: "#F5F5F5",
-            backgroundGradientTo: "#F5F5F5",
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(61, 61, 61, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-          }}
-          bezier
-          style={styles.graph}
-        />
-      </View>
-
-      <View style={styles.graphContainer}>
-        <Text style={styles.graphTitle}>총 볼륨량</Text>
-        <LineChart
-          data={{
-            labels: [
-              "Day 1",
-              "Day 2",
-              "Day 3",
-              "Day 4",
-              "Day 5",
-              "Day 6",
-              "Day 7",
-            ],
-            datasets: [
-              {
-                data: volumeData,
-              },
-            ],
-          }}
-          width={300}
-          height={200}
-          chartConfig={{
-            backgroundColor: "#F5F5F5",
-            backgroundGradientFrom: "#F5F5F5",
-            backgroundGradientTo: "#F5F5F5",
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(61, 61, 61, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-          }}
-          bezier
-          style={styles.graph}
-        />
-      </View>
+      {renderGraph(calorieData, "칼로리 소모량")}
+      {renderGraph(volumeData, "볼륨량")}
     </View>
   );
 };
