@@ -47,7 +47,7 @@ function MainTabs() {
         tabBarActiveTintColor: "tomato",
         tabBarInactiveTintColor: "gray",
 
-        tabBarStyle: { height: 100, paddingVertical: 10 },
+        tabBarStyle: { height: 100, paddingVertical: 10, fontWeight: 700 },
       })}
     >
       <Tab.Screen name="운동 기록" component={WorkoutScreen} />
