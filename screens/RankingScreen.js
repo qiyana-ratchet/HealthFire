@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Button } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Button,
+  TouchableOpacity,
+} from "react-native";
 import {
   doc,
   getDoc,
@@ -12,7 +19,8 @@ import {
 import { app, auth } from "../FirebaseConfig";
 
 const RankingScreen = ({ navigation }) => {
-  const [rankingData, setRankingData] = useState([]);
+  const [weightRankingData, setWeightRankingData] = useState([]);
+  const [timeRankingData, setTimeRankingData] = useState([]);
   const [showTotalWeight, setShowTotalWeight] = useState(true);
 
   useEffect(() => {
@@ -27,7 +35,8 @@ const RankingScreen = ({ navigation }) => {
 
       const friends = userDocSnap.data().friend || [];
       friends.push(currentUserEmail);
-      let ranking = [];
+      let weightRanking = [];
+      let timeRanking = [];
 
       for (const userEmail of friends) {
         const userRef = doc(db, "users", userEmail);
@@ -62,7 +71,7 @@ const RankingScreen = ({ navigation }) => {
             if (key <= 7) {
               items.forEach((item) => {
                 if (item.done && item.kg) {
-                  weightSum += item.kg * item.count;
+                  weightSum += parseFloat(item.kg) * parseFloat(item.count);
                 }
               });
             } else if (key === "8") {
@@ -88,18 +97,25 @@ const RankingScreen = ({ navigation }) => {
         });
 
         const userNickname = userSnap.data().nickname;
-        ranking.push({
+
+        weightRanking.push({
+          nickname: userNickname,
+          totalWeight: weightSum,
+          totalTime: timeSum,
+        });
+
+        timeRanking.push({
           nickname: userNickname,
           totalWeight: weightSum,
           totalTime: timeSum,
         });
       }
 
-      // Sort ranking by total weight and time
-      ranking.sort(
-        (a, b) => b.totalWeight + b.totalTime - (a.totalWeight + a.totalTime)
-      );
-      setRankingData(ranking);
+      weightRanking.sort((a, b) => b.totalWeight - a.totalWeight);
+      timeRanking.sort((a, b) => b.totalTime - a.totalTime);
+
+      setWeightRankingData(weightRanking);
+      setTimeRankingData(timeRanking);
     };
 
     fetchRankings();
@@ -111,33 +127,40 @@ const RankingScreen = ({ navigation }) => {
       <Text style={styles.nickname}>{item.nickname}</Text>
       <Text style={styles.value}>
         {showTotalWeight
-          ? `Total Weight: ${item.totalWeight}`
-          : `Total Time: ${item.totalTime}`}
+          ? `총 볼륨: ${item.totalWeight}kg`
+          : `총 소모 칼로리: ${item.totalTime}Kcal`}
       </Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Ranking</Text>
       <View style={styles.buttonContainer}>
-        <Button
-          title="Show Weight Ranking"
+        <TouchableOpacity
+          style={[
+            styles.button,
+            showTotalWeight ? styles.activeButton : styles.inactiveButton,
+          ]}
           onPress={() => setShowTotalWeight(true)}
-          disabled={showTotalWeight}
-        />
-        <Button
-          title="Show Time Ranking"
+        >
+          <Text style={styles.buttonText}>볼륨 순으로 보기</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            !showTotalWeight ? styles.activeButton : styles.inactiveButton,
+          ]}
           onPress={() => setShowTotalWeight(false)}
-          disabled={!showTotalWeight}
-        />
+        >
+          <Text style={styles.buttonText}>소모칼로리 순으로 보기</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.rankingContainer}>
         <Text style={styles.rankingHeader}>
-          {showTotalWeight ? "Weight Ranking" : "Time Ranking"}
+          {showTotalWeight ? "총 볼륨 랭킹" : "총 소모 칼로리 랭킹"}
         </Text>
         <FlatList
-          data={rankingData}
+          data={showTotalWeight ? weightRankingData : timeRankingData}
           renderItem={renderRankingItem}
           keyExtractor={(item, index) => index.toString()}
         />
@@ -150,29 +173,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#F5F5F5",
   },
   header: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: "bold",
+    color: "#3D3D3D",
     marginBottom: 20,
   },
   rankingContainer: {
     marginBottom: 20,
   },
   rankingHeader: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
+    color: "#3D3D3D",
+    marginBottom: 20,
   },
   rankingItem: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 30,
     borderRadius: 10,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -181,27 +206,50 @@ const styles = StyleSheet.create({
   },
   rank: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
+    color: "#3D3D3D",
   },
   nickname: {
     flex: 3,
-    fontSize: 16,
+    fontSize: 18,
+    color: "#3D3D3D",
   },
   value: {
     flex: 2,
     fontSize: 16,
+    color: "#3D3D3D",
   },
   summaryContainer: {
     marginTop: 10,
   },
   summaryText: {
     fontSize: 16,
+    color: "#3D3D3D",
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 10,
+  },
+  activeButton: {
+    backgroundColor: "#747474",
+  },
+  inactiveButton: {
+    backgroundColor: "#fc493e",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
 

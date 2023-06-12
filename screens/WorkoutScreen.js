@@ -1,22 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions, Container, ScrollView } from 'react-native';
-import { Calendar, LocaleConfig } from 'react-native-calendars';
-import { firestore, auth } from '../FirebaseConfig'; //이파일에 쓰이는 export된 변수 firestore->우리의 firestore, auth
-import { collection, doc, getDoc, setDoc, getCollection, getDocs, updateDoc } from 'firebase/firestore';
-import { color } from 'react-native-elements/dist/helpers';
 
-// const exercises = [
-//   {id: 1, name: '스쿼트'},
-//   {id: 2, name: '데드리프트'},
-//   {id: 3, name: '런지'},
-//   {id: 4, name: '레그익스텐션'},
-//   {id: 5, name: '벤치프레스'},
-//   {id: 6, name: '덤벨플라이'},
-//   {id: 7, name: '딥스'},
-//   {id: 8, name: '조깅'},
-//   {id: 9, name: '사이클'},
-//   {id: 10, name: '플랭크'},
-// ];
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
+import { Divider } from "react-native-paper"; // add this import statement
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
+import { firestore, auth } from "../FirebaseConfig";
+
+const windowWidth = Dimensions.get("window").width;
 
 
 
@@ -41,8 +44,8 @@ export default function WorkoutScreen({ navigation }) {
 
   const [buttonColor, setButtonColor] = useState('#D9D9D9');
 
-  //달력에 기록된 날짜 표시
-  const fetchMarkedDates = async () => { // docs를 불러와서 점을 다시 찍어
+  const fetchMarkedDates = async () => {
+
     try {
       const exerciseCollection = await getDocs(collection(userDoc, 'exercise')); //이 작업이 완료되면
       const dates = {};
@@ -59,17 +62,10 @@ export default function WorkoutScreen({ navigation }) {
 
   };
 
-  //기록된 날짜 즉각 업데이트
-  useEffect(() => { //화면이 바뀌
-    // const unsubscribe = navigation.addListener('focus', fetchMarkedDates); //네비게이션 객체에 focus(화면 포커스) 이벤트리스너 추가
-    // return unsubscribe; //이전에 등록한 이벤트 리스너 해제??
+  useEffect(() => {
+    navigation.addListener("focus", fetchMarkedDates);
+  }, [navigation]);
 
-    navigation.addListener('focus', fetchMarkedDates); //네비게이션 객체에 focus(화면 포커스) 이벤트리스너 추가
-    //이전에 등록한 이벤트 리스너 해제??
-
-
-
-  }, [navigation]); //화면이 바뀌는것 기준.
 
 
   //날짜 선택됐을 때 
@@ -78,7 +74,13 @@ export default function WorkoutScreen({ navigation }) {
     setMarkedDates((prevMarkedDates) => ({
       ...prevMarkedDates,
       [selectedDate]: { ...prevMarkedDates[selectedDate], selected: false },
-      [date.dateString]: { ...prevMarkedDates[date.dateString], selected: true, selectedColor: '#D9D9D9' },
+
+      [date.dateString]: {
+        ...prevMarkedDates[date.dateString],
+        selected: true,
+        selectedColor: "#fc493e",
+      },
+
     }));
 
     setSelectedDate(date.dateString);
@@ -87,33 +89,13 @@ export default function WorkoutScreen({ navigation }) {
     const dateRef = doc(collection(userDoc, 'exercise'), date.dateString); //전에 눌린거
     const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.₩
 
-    if (dateDoc.exists()) { //이 레퍼런스가 존재하면
-
+    if (dateDoc.exists()) {
       setExerciseData(dateDoc.data());
-      // setKeys(Object.keys(dateDoc.data())); //렌더링에 쓰지마
-
     } else {
       setExerciseData(null); //usereffect로가
     }
 
-    // countTotalVol();
-
-
-
   };
-
-  // const countTotalVol = () => {
-  //   console.log(exerciseData[1]);
-  //   // exerciseData.forEach(([key, value]) => {
-  //   //   value.forEach((exerciseItem) => { //value는 1,3,5
-  //   //     if (exerciseItem.done) {
-  //   //       // console.log(exerciseItem.done);
-  //   //       console.log(exerciseItem.kg);
-  //   //     }
-  //   //   });
-  //   // });
-  // };
-
   useEffect(() => {
     let totalKg = 0;
     let totalKcal = 0;
@@ -204,12 +186,13 @@ export default function WorkoutScreen({ navigation }) {
 
 
   const handleExerciseButtonPress = () => {
-    navigation.navigate('WorkoutDetail', { selectedDate: selectedDate }); // 메인 화면으로 이동
-    // 운동 선택 페이지로 이동하는 코드
+
+    navigation.navigate("운동 선택", { selectedDate: selectedDate }); // 메인 화면으로 이동
   };
 
-  const handleDoneButtonPress = async (item) => { //몇번째 세트인지
-    const newColor = buttonColor === '#FC493E' ? '#D9D9D9' : '#FC493E';
+  const handleDoneButtonPress = async (item) => {
+    const newColor = buttonColor === "#FC493E" ? "#D9D9D9" : "#FC493E";
+
 
     setButtonColor(newColor);
     setDone(!done);
@@ -236,25 +219,25 @@ export default function WorkoutScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.calendarcontainer}>
+      <View>
         <Calendar
           theme={{
-            backgroundColor: '#D9D9D9',
-            calendarBackground: '#ffffff',
-            textSectionTitleColor: 'grey',
-            selectedDayBackgroundColor: '#00adf5',
-            selectedDayTextColor: '#ffffff',
-            todayTextColor: 'red',
-            dayTextColor: '#2d4150',
-            textDisabledColor: '#d9e1e8',
-            dotColor: '#00adf5',
-            selectedDotColor: 'red',
-            arrowColor: 'red',
-            monthTextColor: 'red',
-            indicatorColor: 'blue',
-            textDayFontWeight: '300',
-            textMonthFontWeight: 'bold',
-            textDayHeaderFontWeight: '300',
+            backgroundColor: "#D9D9D9",
+            calendarBackground: "#ffffff",
+            textSectionTitleColor: "grey",
+            selectedDayBackgroundColor: "#00adf5",
+            selectedDayTextColor: "#ffffff",
+            todayTextColor: "#fc493e",
+            dayTextColor: "#2d4150",
+            textDisabledColor: "#d9e1e8",
+            dotColor: "#00adf5",
+            selectedDotColor: "white",
+            arrowColor: "#fc493e",
+            monthTextColor: "#fc493e",
+            indicatorColor: "blue",
+            textDayFontWeight: "300",
+            textMonthFontWeight: "bold",
+            textDayHeaderFontWeight: "300",
             textDayFontSize: 16,
             textMonthFontSize: 16,
             textDayHeaderFontSize: 15,
@@ -264,61 +247,6 @@ export default function WorkoutScreen({ navigation }) {
           markedDates={markedDates} //이거 하나인데?
           onDayPress={handleDayPress} />
       </View>
-
-
-
-      {/* <Text>Selected Date: {selectedDate} </Text> */}
-
-      {/* <View>
-      {exerciseData ? (
-        <Text> exerciseData: {exerciseData[1].map((item, index) => (
-          <View key={index}>
-            <Text>Count: {item.count}</Text>
-            <Text>Done: {item.done.toString()}</Text>
-            <Text>Kg: {item.kg}</Text>
-          </View>
-        ))} </Text>
-      ): (
-        <Text> 데이터가 없습니다 </Text>
-      )}
-
-      {keys ? (
-        <Text> keys: {keys} </Text>
-      ): (
-        <Text> 키들이 없습니다 </Text>
-      )}
-      </View> */}
-
-
-
-      {/* <Text>exercise Data: {exerciseData} </Text> */}
-      {/* <Text>Keys: {keys} </Text> */}
-      {/* <Text>markedDates: {markedDates} </Text> */}
-      {/* <View>
-        {exerciseData ? (
-          <View style={styles.totalcontainer}>
-            <View style={styles.total}>
-              <Text style={styles.title}>총볼륨</Text>
-              <Text style={styles.contents}>{totalKg}</Text>
-            </View>
-
-            <View style={styles.total}>
-              <Text style={styles.title}>총칼로리</Text>
-              <Text style={styles.contents}>{totalKcal}</Text>
-            </View>
-
-            <View style={styles.total}>
-              <Text style={styles.title}>달성률</Text>
-              <Text style={styles.contents}>{perc}%</Text>
-            </View>
-          </View>
-        ): (
-          <Text></Text>
-        )}
-      </View> */}
-
-
-
 
       <ScrollView contentContainerStyle={styles.excontainer}>
 
@@ -405,9 +333,12 @@ export default function WorkoutScreen({ navigation }) {
           ))
         ) : (
           <View style={styles.container}>
-            {/* <Text>기록이 없습니다.</Text> */}
-            <TouchableOpacity style={styles.exerciseButton} onPress={handleExerciseButtonPress} >
-              <Text style={styles.buttonText}>운동 기록하기!!!</Text>
+            <TouchableOpacity
+              style={styles.exerciseButton}
+              onPress={handleExerciseButtonPress}
+            >
+              <Text style={styles.buttonText}>운동 기록하기</Text>
+
             </TouchableOpacity>
           </View>
 
@@ -427,49 +358,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   calendar: {
-    width: 360,
-    margin: 10,
+    width: windowWidth,
     borderRadius: 1,
-    alignSelf: 'center',
-    borderRadius: 20,
+    alignSelf: "center",
+    paddingVertical: 30,
+
   },
   headerText: {
     color: 'red',
   },
   totalcontainer: {
-    // flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    // backgroundColor: 'black'
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    marginVertical: 20,
   },
   total: {
-    backgroundColor: '#FC493E',
-    marginLeft: 20,
-    marginRight: 20,
+    backgroundColor: "#FC493E",
+
     borderRadius: 50,
-    width: 80,
-    height: 50,
-    marginBottom: 10,
+    padding: 10,
+    width: windowWidth / 3.5,
+    alignItems: "center",
   },
   title: {
-    padding: 5,
-    textAlign: 'center',
-    // color: '#D9D9D9'
+    color: "white",
+    fontWeight: "bold",
   },
   contents: {
-    textAlign: 'center',
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
+
   },
   exerciseButton: {
-    width: 360,
+    width: windowWidth - 70,
     height: 50,
     marginTop: 0,
     backgroundColor: '#FC493E',
     borderRadius: 10,
-    // padding: 10,
-    alignItems: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+
   },
   exerciseNameContainer: {
     borderBottomWidth: 1,
@@ -483,46 +412,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   excontainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 370,
-    marginBottom: 60,
-    // backgroundColor: '#ffffff',
+    alignItems: "center",
+    justifyContent: "center",
+    width: windowWidth,
+    padding: 20,
   },
   exerciseContainer: {
     borderRadius: 10,
-    borderColor: '#FC493E',
-    borderWidth: '1',
-    width: 360,
-    marginLeft: 5,
-    marginRight: 5,
-    marginBottom: 10,
-    backgroundColor: 'white',
+    borderColor: "#FC493E",
+    borderWidth: 1,
+    width: "100%",
+    marginBottom: 20,
+    backgroundColor: "white",
   },
   setContainer: {
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    marginLeft: 5,
-    marginRight: 5,
-    marginBottom: 5,
+    flexDirection: "row",
+    padding: 5,
+    alignItems: "center",
   },
   buttonText: {
-    color: 'white',
-    lineHeight: 50,
+    color: "white",
+
     fontSize: 14,
     fontWeight: 'bold',
   },
-  doneFalseButton: {
-    // color: '#D9D9D9',
-    // backgroundColor: '#D9D9D9',
+  doneButton: {
+    marginLeft: "auto",
     height: 25,
-    marginRight: 5
-  },
-  doneTrueButton: {
-    // color: '#D9',
-    // backgroundColor: '#FC493E',
-    height: 25,
-    marginRight: 5
+
   },
   donebuttonText: {
     fontSize: 20,
