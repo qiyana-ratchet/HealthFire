@@ -59,7 +59,6 @@ function MainTabs() {
 }
 
 export default function App() {
-  // 로그인 화면과 메인 화면을 네비게이션으로 연결
   return (
     <NavigationContainer>
       <Stack.Navigator
