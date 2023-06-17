@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, Button, StyleSheet, ScrollView } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import {
   doc,
@@ -9,133 +9,199 @@ import {
   getFirestore,
   Timestamp,
 } from "firebase/firestore";
+import { signOut } from "firebase/auth";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { app, auth } from "../FirebaseConfig";
 
 const MyPage = ({ navigation }) => {
-  const [calorieData, setCalorieData] = useState([]);
-  const [volumeData, setVolumeData] = useState([]);
+  const [userName, setUserName] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [hasExercised, setHasExercised] = useState(false);
+  const [exerciseVolumeData, setExerciseVolumeData] = useState({});
+  const [exerciseCaloriesData, setExerciseCaloriesData] = useState({});
+  const currentUserEmail = auth.currentUser.email;
 
-  useEffect(() => {
-    const fetchExerciseData = async () => {
-      const db = getFirestore();
-      const currentUserEmail = auth.currentUser.email;
-      const userDocRef = doc(db, "users", currentUserEmail);
-      const userDocSnap = await getDoc(userDocRef);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchUserData = async () => {
+        const db = getFirestore();
+        const userDocRef = doc(db, "users", currentUserEmail);
+        const userDocSnap = await getDoc(userDocRef);
 
-      if (!userDocSnap.exists()) {
-        return;
-      }
+        if (userDocSnap.exists()) {
+          setUserName(userDocSnap.data().name);
+          setNickname(userDocSnap.data().nickname);
 
-      const exerciseColRef = collection(userDocRef, "exercise");
-      const exerciseQuerySnapshot = await getDocs(exerciseColRef);
+          const exerciseColRef = collection(userDocRef, "exercise");
+          const exerciseQuerySnapshot = await getDocs(exerciseColRef);
 
-      const today = Timestamp.fromDate(new Date());
-      const sevenDaysAgoTimestamp = Timestamp.fromMillis(
-        today.toMillis() - 6 * 24 * 60 * 60 * 1000
-      );
-      const formattedSevenDaysAgo = `${
-        sevenDaysAgoTimestamp.toDate().toISOString().split("T")[0]
-      }`;
+          let totalVolume = [];
+          let totalCalories = [];
+          let dates = [];
+          const today = new Date(); // 현재 날짜
+          const sevenDaysAgo = new Date(
+            today.getTime() - 7 * 24 * 60 * 60 * 1000
+          );
 
-      let calorieData = [];
-      let volumeData = [];
+          for (let i = 6; i >= 0; i--) {
+            const currentDate = new Date(
+              today.getTime() - i * 24 * 60 * 60 * 1000
+            );
+            const formattedDate = currentDate.toLocaleDateString("en-US", {
+              month: "numeric",
+              day: "numeric",
+            });
+            dates.push(formattedDate);
 
-      exerciseQuerySnapshot.docs.forEach((doc) => {
-        const exercise = doc.data();
-        const date = doc.id;
+            let dayVolume = 0;
+            let dayCalories = 0;
 
-        if (date >= formattedSevenDaysAgo) {
-          let calorieSum = 0;
-          let volumeSum = 0;
+            exerciseQuerySnapshot.docs.forEach((doc) => {
+              const exercise = doc.data();
+              const date = new Date(doc.id);
 
-          Object.keys(exercise).forEach((key) => {
-            const items = exercise[key];
+              if (date.getDate() === currentDate.getDate()) {
+                Object.values(exercise).forEach((items) => {
+                  Object.keys(exercise).forEach((key) => {
+                    const items = exercise[key];
+                    if (key <= 7) {
+                      items.forEach((item) => {
+                        if (item.done && item.kg) {
+                          dayVolume +=
+                            parseFloat(item.kg) * parseFloat(item.count);
+                        }
+                      });
+                    } else if (key === "8") {
+                      items.forEach((item) => {
+                        if (item.done && item.time) {
+                          dayCalories += 13 * parseFloat(item.time);
+                        }
+                      });
+                    } else if (key === "9") {
+                      items.forEach((item) => {
+                        if (item.done && item.time) {
+                          dayCalories += 9 * parseFloat(item.time);
+                        }
+                      });
+                    } else if (key === "10") {
+                      items.forEach((item) => {
+                        if (item.done && item.time) {
+                          dayCalories += 4 * parseFloat(item.time);
+                        }
+                      });
+                    }
+                  });
+                });
+              }
+            });
 
-            if (key <= "7") {
-              items.forEach((item) => {
-                if (item.done && item.kg) {
-                  volumeSum += parseFloat(item.kg) * parseFloat(item.count);
-                }
-              });
-            } else if (key === "8") {
-              items.forEach((item) => {
-                if (item.done && item.time) {
-                  calorieSum += 13 * parseFloat(item.time);
-                }
-              });
-            } else if (key === "9") {
-              items.forEach((item) => {
-                if (item.done && item.time) {
-                  calorieSum += 9 * parseFloat(item.time);
-                }
-              });
-            } else if (key === "10") {
-              items.forEach((item) => {
-                if (item.done && item.time) {
-                  calorieSum += 4 * parseFloat(item.time);
-                }
-              });
-            }
+            totalVolume.push(dayVolume);
+            totalCalories.push(dayCalories);
+          }
+
+          setExerciseVolumeData({
+            labels: dates,
+            datasets: [
+              {
+                data: totalVolume,
+                color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+                strokeWidth: 2, // optional
+              },
+            ],
           });
 
-          calorieData.push(calorieSum);
-          volumeData.push(volumeSum);
-        }
-      });
-
-      calorieData = calorieData.map((data) => (isNaN(data) ? 0 : data));
-      volumeData = volumeData.map((data) => (isNaN(data) ? 0 : data));
-
-      setCalorieData(calorieData);
-      setVolumeData(volumeData);
-    };
-
-    fetchExerciseData();
-  }, [navigation]);
-
-  const renderGraph = (data, title) => {
-    return (
-      <View style={styles.graphContainer}>
-        <Text style={styles.graphTitle}>총 {title}</Text>
-        <LineChart
-          data={{
-            labels: [
-              "Day 1",
-              "Day 2",
-              "Day 3",
-              "Day 4",
-              "Day 5",
-              "Day 6",
-              "Day 7",
+          setExerciseCaloriesData({
+            labels: dates,
+            datasets: [
+              {
+                data: totalCalories,
+                color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+                strokeWidth: 2, // optional
+              },
             ],
-            datasets: [{ data }],
-          }}
-          width={300}
-          height={200}
-          chartConfig={{
-            backgroundColor: "#F5F5F5",
-            backgroundGradientFrom: "#F5F5F5",
-            backgroundGradientTo: "#F5F5F5",
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(61, 61, 61, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-          }}
-          bezier
-          style={styles.graph}
-        />
-      </View>
-    );
+          });
+          console.log(totalCalories);
+          console.log(totalVolume);
+
+          setHasExercised(
+            totalVolume.some((volume) => volume > 0) ||
+              totalCalories.some((calories) => calories > 0)
+          );
+        }
+      };
+
+      fetchUserData();
+    }, [])
+  );
+
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        navigation.navigate("Login");
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+      });
   };
 
   return (
-    <View style={styles.container}>
-      {renderGraph(calorieData, "칼로리 소모량")}
-      {renderGraph(volumeData, "볼륨량")}
-    </View>
+    <ScrollView style={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.nickname}>{nickname}님</Text>
+        <Text style={styles.email}>{currentUserEmail}</Text>
+        <Text style={styles.name}>{userName}</Text>
+        <View style={styles.logoutButton}>
+          <Button onPress={handleLogout} title="로그아웃" color="#FFFFFF" />
+        </View>
+      </View>
+
+      {hasExercised ? (
+        <ScrollView>
+          <View style={styles.graphContainer}>
+            <Text style={styles.graphTitle}>총 볼륨</Text>
+            <LineChart
+              data={exerciseVolumeData}
+              width={300}
+              height={200}
+              yAxisSuffix="kg"
+              yAxisInterval={100}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.graphStyle}
+            />
+          </View>
+          <View style={styles.graphContainer}>
+            <Text style={styles.graphTitle}>소모 칼로리</Text>
+            <LineChart
+              data={exerciseCaloriesData}
+              width={300}
+              height={200}
+              yAxisSuffix="kcal"
+              yAxisInterval={100}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.graphStyle}
+            />
+          </View>
+        </ScrollView>
+      ) : (
+        <View>
+          <Text style={styles.noExerciseText}>
+            일주일 동안 운동을 하지 않았습니다.
+          </Text>
+        </View>
+      )}
+    </ScrollView>
   );
+};
+
+const chartConfig = {
+  backgroundGradientFrom: "#FFFFFF",
+  backgroundGradientTo: "#FFFFFF",
+  decimalPlaces: 0,
+  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
 };
 
 const styles = StyleSheet.create({
@@ -144,17 +210,64 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#F5F5F5",
   },
-  graphContainer: {
-    marginBottom: 20,
+  card: {
+    backgroundColor: "#FFFFFF",
+    padding: 30,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  graphTitle: {
+  nickname: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#3D3D3D",
     marginBottom: 10,
+    textAlign: "center",
   },
-  graph: {
+  email: {
+    fontSize: 16,
+    color: "grey",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  name: {
+    fontSize: 18,
+    textAlign: "center",
+  },
+  logoutButton: {
+    marginTop: 20,
+    backgroundColor: "#FF6347",
+    padding: 10,
+    borderRadius: 10,
+    fontWeight: "bold",
+  },
+  graphContainer: {
+    marginTop: 25,
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  graphTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  graphStyle: {
+    marginVertical: 8,
     borderRadius: 16,
+  },
+  noExerciseText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 25,
   },
 });
 
