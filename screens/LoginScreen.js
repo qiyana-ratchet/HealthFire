@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Image,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { app, auth } from "../FirebaseConfig";
 import {
@@ -15,54 +16,32 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { color } from "react-native-elements/dist/helpers";
 
 export default function LoginScreen({ navigation }) {
   // 로그인 화면
   const [email, setEmail] = useState(""); // 이메일과 비밀번호를 위한 상태 변수
   const [password, setPassword] = useState("");
-
   const handleLogin = () => {
-    // 로그인 처리
     const auth = getAuth(); // Firebase 인증 객체
-    signInWithEmailAndPassword(auth, email, password) // Firebase 로그인 함수
+    signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        // 로그인 성공 시
         console.log("Login success");
-        // Signed in
-        const user = userCredential.user; // 로그인한 사용자 정보
-        // ...
-        navigation.navigate("Main"); // 메인 화면으로 이동
+        const user = userCredential.user;
+        setEmail("");
+        setPassword("");
+        navigation.navigate("Main");
       })
       .catch((error) => {
-        // 로그인 실패 시
-        console.log("Login Error");
-        const errorCode = error.code; // 에러 코드
-        const errorMessage = error.message; // 에러 메시지
-        console.log(errorCode);
-        console.log(errorMessage);
-        // ..
+        Alert.alert(
+          "로그인 실패",
+          "아이디 또는 비밀번호가 잘못됐습니다. 다시 시도해주세요!",
+          [{ text: "확인", onPress: () => console.log("!") }],
+          { cancelable: false }
+        );
       });
   };
 
   const handleSignUp = () => {
-    // 회원가입 처리
-    // const auth = getAuth();
-    // createUserWithEmailAndPassword(auth, email, password)  // Firebase 회원가입 함수
-    //   .then((userCredential) => {  // 회원가입 성공 시
-    //     console.log("Sign-up success");
-    //     // Signed in
-    //     const user = userCredential.user;  // 회원가입한 사용자 정보
-    //     // ...
-    //   })
-    //   .catch((error) => {  // 회원가입 실패 시
-    //     console.log("Sign-up Error");
-    //     const errorCode = error.code;  // 에러 코드
-    //     const errorMessage = error.message;  // 에러 메시지
-    //     console.log(errorCode)
-    //     console.log(errorMessage)
-    //     // ..
-    //   });
     navigation.navigate("SignUp"); // 회원가입 화면으로 이동
   };
 

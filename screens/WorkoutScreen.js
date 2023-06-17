@@ -72,14 +72,15 @@ export default function WorkoutScreen({ navigation }) {
     setSelectedDate(date.dateString);
 
     const dateRef = doc(collection(userDoc, "exercise"), date.dateString); //전에 눌린거
-    const dateDoc = await getDoc(dateRef); //실제 해당날짜의 운동 데이터 가져옴.₩
+    const dateDoc = await getDoc(dateRef);
 
     if (dateDoc.exists()) {
       setExerciseData(dateDoc.data());
     } else {
-      setExerciseData(null); //usereffect로가
+      setExerciseData(null);
     }
   };
+
   useEffect(() => {
     let totalKg = 0;
     let totalKcal = 0;
@@ -220,7 +221,7 @@ export default function WorkoutScreen({ navigation }) {
             textDayHeaderFontSize: 15,
           }}
           style={styles.calendar}
-          markedDates={markedDates} //이거 하나인데?
+          markedDates={markedDates}
           onDayPress={handleDayPress}
         />
       </View>
@@ -229,13 +230,13 @@ export default function WorkoutScreen({ navigation }) {
         {exerciseData ? (
           <View style={styles.totalcontainer}>
             <View style={styles.total}>
-              <Text style={styles.title}>총볼륨</Text>
-              <Text style={styles.contents}>{totalKg}</Text>
+              <Text style={styles.title}>총 볼륨</Text>
+              <Text style={styles.contents}>{totalKg}kg</Text>
             </View>
 
             <View style={styles.total}>
-              <Text style={styles.title}>소모칼로리</Text>
-              <Text style={styles.contents}>{totalKcal}</Text>
+              <Text style={styles.title}>소모 칼로리</Text>
+              <Text style={styles.contents}>{totalKcal}Kcal</Text>
             </View>
 
             <View style={styles.total}>
@@ -364,9 +365,8 @@ const styles = StyleSheet.create({
   },
   calendar: {
     width: windowWidth,
-    borderRadius: 1,
     alignSelf: "center",
-    paddingVertical: 30,
+    padding: 15,
   },
   headerText: {
     color: "red",
@@ -374,12 +374,13 @@ const styles = StyleSheet.create({
   totalcontainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-around",
-    marginVertical: 20,
+    justifyContent: "space-evenly",
+    marginVertical: 10,
+    gap: 20,
   },
   total: {
     backgroundColor: "#FC493E",
-    borderRadius: 50,
+    borderRadius: 10,
     padding: 10,
     width: windowWidth / 3.5,
     alignItems: "center",
@@ -397,7 +398,7 @@ const styles = StyleSheet.create({
     height: 50,
     marginTop: 0,
     backgroundColor: "#FC493E",
-    borderRadius: 10,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -416,7 +417,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: windowWidth,
-    padding: 20,
+    padding: 30,
+    gap: 10,
   },
   exerciseContainer: {
     borderRadius: 10,

@@ -119,7 +119,7 @@ const RankingScreen = ({ navigation }) => {
     };
 
     fetchRankings();
-  }, [navigation]);
+  }, [navigation, showTotalWeight]);
 
   const renderRankingItem = ({ item, index }) => (
     <View style={styles.rankingItem}>

@@ -70,15 +70,13 @@ export default function App() {
           headerTitleStyle: {
             fontWeight: "bold",
           },
-          headerBackTitle: " ", // For iOS, this will replace the default 'Back' text
-          headerBackTitleVisible: true, // Makes the back button title visible
+          headerBackTitle: " ",
+          headerBackTitleVisible: true,
           headerBackTitleStyle: {
-            // style the back title
             color: "#fff",
             fontSize: 16,
           },
           headerLeftContainerStyle: {
-            // You can add additional styles to the back button container
             paddingLeft: 10,
           },
         }}
@@ -86,19 +84,19 @@ export default function App() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ headerShown: false }}
+          options={{ headerTitle: "" }}
         />
+        <Stack.Screen name="운동 선택" component={WorkoutDetailScreen} />
         <Stack.Screen
           name="Main"
           component={MainTabs}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="운동 선택" component={WorkoutDetailScreen} />
         <Stack.Screen name="운동 시간 기록" component={WorkoutDetailScreen2} />
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{ headerShown: false }}
+          options={{ headerTitle: "" }}
         />
         <Stack.Screen
           name="AddFriend"
