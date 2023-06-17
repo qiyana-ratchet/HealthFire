@@ -62,39 +62,39 @@ const MyPage = ({ navigation }) => {
               const date = new Date(doc.id);
 
               if (date.getDate() === currentDate.getDate()) {
-                Object.values(exercise).forEach((items) => {
-                  Object.keys(exercise).forEach((key) => {
-                    const items = exercise[key];
-                    if (key <= 7) {
-                      items.forEach((item) => {
-                        if (item.done && item.kg) {
-                          dayVolume +=
-                            parseFloat(item.kg) * parseFloat(item.count);
-                        }
-                      });
-                    } else if (key === "8") {
-                      items.forEach((item) => {
-                        if (item.done && item.time) {
-                          dayCalories += 13 * parseFloat(item.time);
-                        }
-                      });
-                    } else if (key === "9") {
-                      items.forEach((item) => {
-                        if (item.done && item.time) {
-                          dayCalories += 9 * parseFloat(item.time);
-                        }
-                      });
-                    } else if (key === "10") {
-                      items.forEach((item) => {
-                        if (item.done && item.time) {
-                          dayCalories += 4 * parseFloat(item.time);
-                        }
-                      });
-                    }
-                  });
+                Object.keys(exercise).forEach((key) => {
+                  const items = exercise[key];
+                  if (key <= 7) {
+                    items.forEach((item) => {
+                      if (item.done && item.kg) {
+                        dayVolume +=
+                          parseFloat(item.kg) * parseFloat(item.count);
+                      }
+                    });
+                  } else if (key === "8") {
+                    items.forEach((item) => {
+                      if (item.done && item.time) {
+                        dayCalories += 13 * parseFloat(item.time);
+                      }
+                    });
+                  } else if (key === "9") {
+                    items.forEach((item) => {
+                      if (item.done && item.time) {
+                        dayCalories += 9 * parseFloat(item.time);
+                      }
+                    });
+                  } else if (key === "10") {
+                    items.forEach((item) => {
+                      if (item.done && item.time) {
+                        dayCalories += 4 * parseFloat(item.time);
+                      }
+                    });
+                  }
                 });
               }
             });
+            console.log(dayVolume);
+            console.log(dayCalories);
 
             totalVolume.push(dayVolume);
             totalCalories.push(dayCalories);
@@ -121,8 +121,6 @@ const MyPage = ({ navigation }) => {
               },
             ],
           });
-          console.log(totalCalories);
-          console.log(totalVolume);
 
           setHasExercised(
             totalVolume.some((volume) => volume > 0) ||
